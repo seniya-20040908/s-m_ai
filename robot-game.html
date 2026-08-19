@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Robot Battle Arena - Seni & Mahe AI Games</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Rajdhani:wght@500;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #070a0f;
+            --card-bg: #0f172a;
+            --accent-cyan: #00f0ff;
+            --accent-purple: #7000ff;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --border-color: rgba(0, 240, 255, 0.2);
+        }
+
+        [data-theme="light"] {
+            --bg-color: #f1f5f9;
+            --card-bg: #ffffff;
+            --accent-cyan: #0284c7;
+            --accent-purple: #7c3aed;
+            --text-main: #0f172a;
+            --text-muted: #475569;
+            --border-color: rgba(2, 132, 199, 0.2);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Outfit', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        header {
+            width: 100%;
+            padding: 1.2rem 5%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border-color);
+            background: var(--card-bg);
+            max-width: 1200px;
+            margin: 0 auto;
+            border-radius: 0 0 16px 16px;
+        }
+
+        .back-btn {
+            color: var(--accent-cyan);
+            text-decoration: none;
+            font-weight: 600;
+            border: 1px solid var(--border-color);
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            transition: 0.3s;
+        }
+
+        .back-btn:hover {
+            background: var(--accent-cyan);
+            color: #000;
+            box-shadow: 0 0 15px rgba(0, 240, 255, 0.4);
+        }
+
+        .brand-name {
+            font-size: 1.8rem;
+            font-weight: 800;
+            font-family: 'Rajdhani', sans-serif;
+            text-transform: uppercase;
+            color: var(--text-main);
+        }
+
+        .brand-name span {
+            color: var(--accent-cyan);
+            text-shadow: 0 0 15px rgba(0, 240, 255, 0.6);
+        }
+
+        .game-container {
+            margin: 2rem auto;
+            text-align: center;
+            max-width: 750px;
+            width: 90%;
+            background: var(--card-bg);
+            padding: 2rem;
+            border-radius: 20px;
+            border: 2px solid var(--border-color);
+            box-shadow: 0 0 35px rgba(0, 240, 255, 0.15);
+        }
+
+        .health-bars {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 1.2rem;
+            font-weight: 700;
+        }
+
+        .health-container {
+            width: 40%;
+            background: #1e293b;
+            border: 2px solid var(--border-color);
+            border-radius: 10px;
+            overflow: hidden;
+            height: 25px;
+        }
+
+        .health-fill {
+            height: 100%;
+            background: #00ff88;
+            width: 100%;
+            transition: width 0.3s ease;
+        }
+
+        .arena {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            height: 220px;
+            background: rgba(0, 0, 0, 0.4);
+            border: 2px solid var(--border-color);
+            border-radius: 15px;
+            margin-bottom: 1.5rem;
+            font-size: 5rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .robot {
+            transition: 0.2s;
+        }
+
+        .battle-log {
+            background: rgba(0, 0, 0, 0.6);
+            border: 1px solid var(--border-color);
+            padding: 12px;
+            border-radius: 10px;
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 1.2rem;
+            color: var(--accent-cyan);
+            margin-bottom: 1.5rem;
+            min-height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+        }
+
+        .ctrl-btn {
+            background: transparent;
+            border: 2px solid var(--accent-cyan);
+            color: var(--text-main);
+            padding: 12px 20px;
+            font-size: 1rem;
+            font-family: 'Rajdhani', sans-serif;
+            font-weight: 700;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: 0.3s;
+            box-shadow: 0 0 10px rgba(0, 240, 255, 0.2);
+        }
+
+        .ctrl-btn:hover {
+            background: var(--accent-cyan);
+            color: #000;
+            transform: translateY(-3px);
+            box-shadow: 0 0 20px rgba(0, 240, 255, 0.6);
+        }
+
+        footer {
+            text-align: center;
+            padding: 1.2rem;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            border-top: 1px solid var(--border-color);
+            margin-top: auto;
+            width: 100%;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="brand-name">AI Robot <span>Battle Arena</span></div>
+        <a href="games.html" class="back-btn">← Back to Games Hub</a>
+    </header>
+
+    <div class="game-container">
+        <div class="health-bars">
+            <div>YOU (HERO BOT)<br>
+                <div class="health-container">
+                    <div id="playerHealth" class="health-fill"></div>
+                </div>
+            </div>
+            <div style="font-family: 'Rajdhani'; font-size: 1.8rem; color: #ff0055;">VS</div>
+            <div style="text-align: right;">AI BOSS BOT<br>
+                <div class="health-container" style="margin-left: auto;">
+                    <div id="aiHealth" class="health-fill" style="background: #ff0055;"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="arena">
+            <div id="playerRobot" class="robot">🤖</div>
+            <div id="aiRobot" class="robot" style="transform: scaleX(-1);">🦾</div>
+        </div>
+
+        <div class="battle-log" id="battleLog">Battle started! Choose your attack!</div>
+
+        <div class="controls" id="controlPanel">
+            <button class="ctrl-btn" onclick="playerAttack('punch')">⚡ PUNCH (10 DMG)</button>
+            <button class="ctrl-btn" onclick="playerAttack('laser')">🔥 LASER BEAM (20 DMG)</button>
+            <button class="ctrl-btn" onclick="playerAttack('heal')">🛡️ REPAIR (heal +15)</button>
+        </div>
+    </div>
+
+    <footer>
+        &copy; 2026 Seni & Mahe AI Creations. All rights reserved.
+    </footer>
+
+    <script>
+        let playerHp = 100;
+        let aiHp = 100;
+        let isGameOver = false;
+
+        const playerHealthEl = document.getElementById('playerHealth');
+        const aiHealthEl = document.getElementById('aiHealth');
+        const battleLog = document.getElementById('battleLog');
+        const playerRobot = document.getElementById('playerRobot');
+        const aiRobot = document.getElementById('aiRobot');
+
+        function playerAttack(action) {
+            if (isGameOver) return;
+
+            let logMessage = "";
+
+            if (action === 'punch') {
+                let dmg = Math.floor(Math.random() * 8) + 8;
+                aiHp -= dmg;
+                logMessage = `You punched AI Bot for ${dmg} damage! ⚡`;
+                playerRobot.style.transform = "translateX(30px)";
+            } else if (action === 'laser') {
+                let dmg = Math.floor(Math.random() * 12) + 15;
+                aiHp -= dmg;
+                logMessage = `You hit AI Bot with a Laser Beam for ${dmg} damage! 🔥`;
+                playerRobot.style.transform = "translateX(50px)";
+            } else if (action === 'heal') {
+                let heal = Math.floor(Math.random() * 10) + 10;
+                playerHp = Math.min(100, playerHp + heal);
+                logMessage = `You repaired your robot and recovered ${heal} HP! 🛡️`;
+            }
+
+            setTimeout(() => { playerRobot.style.transform = "translateX(0px)"; }, 200);
+
+            if (aiHp <= 0) {
+                aiHp = 0;
+                updateHealth();
+                battleLog.innerText = "🎉 VICTORY! You destroyed the AI Bot!";
+                endGame();
+                return;
+            }
+
+            updateHealth();
+            
+            // AI Turn after a short delay
+            setTimeout(() => {
+                if (isGameOver) return;
+                aiTurn();
+            }, 800);
+
+            battleLog.innerText = logMessage;
+        }
+
+        function aiTurn() {
+            let actions = ['attack', 'heavy', 'heal'];
+            let choice = actions[Math.floor(Math.random() * actions.length)];
+
+            if (aiHp < 30 && Math.random() < 0.6) choice = 'heal';
+
+            if (choice === 'attack') {
+                let dmg = Math.floor(Math.random() * 8) + 8;
+                playerHp -= dmg;
+                battleLog.innerText = `🤖 AI Bot counter-attacks and hits you for ${dmg} damage!`;
+                aiRobot.style.transform = "scaleX(-1) translateX(30px)";
+            } else if (choice === 'heavy') {
+                let dmg = Math.floor(Math.random() * 12) + 15;
+                playerHp -= dmg;
+                battleLog.innerText = `🤖 AI Bot fires a Heavy Rocket at you for ${dmg} damage! 💥`;
+                aiRobot.style.transform = "scaleX(-1) translateX(50px)";
+            } else {
+                let heal = Math.floor(Math.random() * 10) + 10;
+                aiHp = Math.min(100, aiHp + heal);
+                battleLog.innerText = `🤖 AI Bot activates self-repair and heals +${heal} HP!`;
+            }
+
+            setTimeout(() => { aiRobot.style.transform = "scaleX(-1) translateX(0px)"; }, 200);
+
+            if (playerHp <= 0) {
+                playerHp = 0;
+                updateHealth();
+                battleLog.innerText = "💀 DEFEAT! AI Bot destroyed your robot!";
+                endGame();
+                return;
+            }
+
+            updateHealth();
+        }
+
+        function updateHealth() {
+            playerHealthEl.style.width = playerHp + "%";
+            aiHealthEl.style.width = aiHp + "%";
+        }
+
+        function endGame() {
+            isGameOver = true;
+            document.getElementById('controlPanel').innerHTML = `<button class="ctrl-btn" onclick="location.reload()" style="background: var(--accent-cyan); color: #000; width: 100%;">PLAY AGAIN 🔄</button>`;
+        }
+    </script>
+</body>
+</html>
