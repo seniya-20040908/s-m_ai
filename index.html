@@ -82,7 +82,6 @@
             position: relative;
         }
 
-        /* Hamburger Menu Styling */
         .menu-toggle {
             background: transparent;
             border: 1px solid var(--border-color);
@@ -116,7 +115,6 @@
             background-color: var(--accent-cyan);
         }
 
-        /* Dropdown Nav List */
         nav {
             position: absolute;
             top: 60px;
@@ -218,7 +216,6 @@
             margin: 0 auto;
         }
 
-        /* Rotating Value Prop Styles */
         .dynamic-prop-container {
             min-height: 40px;
             display: flex;
@@ -551,6 +548,21 @@
             font-size: 1rem;
         }
 
+        .approved-review-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            padding: 1.5rem;
+            border-radius: 12px;
+            margin-bottom: 1rem;
+            text-align: left;
+            border-left: 4px solid #00ff80;
+        }
+
+        .approved-review-card h4 {
+            color: var(--accent-cyan);
+            margin-bottom: 0.4rem;
+        }
+
         .contact-info {
             display: flex;
             justify-content: center;
@@ -589,7 +601,6 @@
             box-shadow: 0 0 15px rgba(0, 240, 255, 0.5);
         }
 
-        /* Floating Action Buttons Style */
         .whatsapp-float, .call-float {
             position: fixed;
             width: 60px;
@@ -684,7 +695,6 @@
     <!-- HOME SECTION -->
     <section class="page-section active" id="home">
         <div class="hero">
-            <!-- Dynamic Text Switcher Placed Here -->
             <div class="dynamic-prop-container">
                 <div class="dynamic-prop" id="dynamicProp">Transform Your Script into Cinematic Shorts</div>
             </div>
@@ -831,35 +841,40 @@
         </div>
     </section>
 
-    <!-- REVIEW SUBMISSION SECTION -->
+    <!-- REVIEW SUBMISSION & TESTIMONIALS SECTION -->
     <section class="page-section" id="reviews">
         <div class="review-box">
             <h2>Leave a Review</h2>
-            <p style="color: var(--text-muted);">Share your experience working with us!</p>
+            <p style="color: var(--text-muted); margin-bottom: 1.5rem;">Share your experience working with us!</p>
             
-            <form class="review-form" action="https://formsubmit.co/wathsilusenitha@gmail.com" method="POST">
-                <input type="hidden" name="_subject" value="New Client Review Pending Approval!">
-                <input type="hidden" name="_captcha" value="false">
-                <input type="hidden" name="_template" value="table">
-                
+            <form class="review-form" id="reviewForm">
                 <div class="form-group">
-                    <input type="text" name="Client_Name" placeholder="Your Name" required>
+                    <input type="text" id="reviewerName" placeholder="Your Name" required>
                 </div>
                 <div class="form-group">
-                    <select name="Rating" required>
-                        <option value="" disabled selected>Select Rating</option>
-                        <option value="5 Stars - Excellent">⭐⭐⭐⭐⭐ (5/5)</option>
-                        <option value="4 Stars - Very Good">⭐⭐⭐⭐ (4/5)</option>
-                        <option value="3 Stars - Good">⭐⭐⭐ (3/5)</option>
-                        <option value="2 Stars - Fair">⭐⭐ (2/5)</option>
-                        <option value="1 Star - Poor">⭐ (1/5)</option>
+                    <select id="reviewRating" required>
+                        <option value="" disabled selected>Rating (1 to 5)</option>
+                        <option value="5">⭐⭐⭐⭐⭐ (5/5)</option>
+                        <option value="4">⭐⭐⭐⭐ (4/5)</option>
+                        <option value="3">⭐⭐⭐ (3/5)</option>
+                        <option value="2">⭐⭐ (2/5)</option>
+                        <option value="1">⭐ (1/5)</option>
                     </select>
                 </div>
                 <div class="form-group">
-                    <textarea name="Review_Message" rows="4" placeholder="Write your review here..." required></textarea>
+                    <textarea id="reviewText" rows="4" placeholder="Write your review here..." required></textarea>
                 </div>
                 <button type="submit" class="btn-primary" style="width: 100%;">Submit Review</button>
             </form>
+            <p id="reviewResponseMessage" style="margin-top: 15px; font-weight: bold;"></p>
+        </div>
+
+        <div style="max-width: 600px; margin: 0 auto;">
+            <h3 style="margin-bottom: 1.5rem; text-align: center;">Client Testimonials</h3>
+            <div id="reviewStatsBox" style="text-align: center; margin-bottom: 1.5rem; color: var(--accent-cyan); font-weight: 700;"></div>
+            <div id="reviewsContainer">
+                <p style="text-align: center; color: var(--text-muted);">Loading reviews...</p>
+            </div>
         </div>
     </section>
 
@@ -910,9 +925,102 @@
         &copy; 2026 Seni & Mahe AI Creations. All rights reserved.
     </footer>
 
+    <!-- Firebase & Scripts -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getFirestore, collection, addDoc, getDocs, query, where } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyD_ZZhD8bxE4amKBsPtunpl7eGLS6d0gZo",
+            authDomain: "seni-and-mahe-ai.firebaseapp.com",
+            projectId: "seni-and-mahe-ai",
+            storageBucket: "seni-and-mahe-ai.firebasestorage.app",
+            messagingSenderId: "967942805752",
+            appId: "1:967942805752:web:08d1f2f6d32a14c80c30d"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        const reviewForm = document.getElementById('reviewForm');
+        reviewForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const name = document.getElementById('reviewerName').value;
+            const ratingVal = parseInt(document.getElementById('reviewRating').value);
+            const text = document.getElementById('reviewText').value;
+            const msgBox = document.getElementById('reviewResponseMessage');
+
+            try {
+                await addDoc(collection(db, "reviews"), {
+                    name: name,
+                    rating: ratingVal,
+                    text: text,
+                    status: "pending",
+                    createdAt: new Date()
+                });
+
+                msgBox.style.color = "#00ff80";
+                msgBox.innerText = "✅ Review submitted successfully! (Will be displayed after approval)";
+                reviewForm.reset();
+            } catch (error) {
+                console.error("Error: ", error);
+                msgBox.style.color = "red";
+                msgBox.innerText = "❌ An error occurred. Please try again later.";
+            }
+        });
+
+        async function loadApprovedReviews() {
+            const container = document.getElementById('reviewsContainer');
+            const statsBox = document.getElementById('reviewStatsBox');
+            container.innerHTML = "<p style='text-align: center; color: var(--text-muted);'>Loading reviews...</p>";
+
+            try {
+                const q = query(collection(db, "reviews"), where("status", "==", "approved"));
+                const querySnapshot = await getDocs(q);
+                
+                if (querySnapshot.empty) {
+                    statsBox.innerText = "0 Total Reviews • 0.0 / 5";
+                    container.innerHTML = "<p style='text-align: center; color: var(--text-muted);'>No approved reviews yet.</p>";
+                    return;
+                }
+
+                let totalReviews = 0;
+                let totalRatingSum = 0;
+                let reviewsHTML = "";
+
+                querySnapshot.forEach((doc) => {
+                    const review = doc.data();
+                    totalReviews++;
+                    const numRating = Number(review.rating) || 5;
+                    totalRatingSum += numRating;
+
+                    let starsStr = "";
+                    for(let i=0; i<numRating; i++) { starsStr += "⭐"; }
+
+                    reviewsHTML += `
+                        <div class="approved-review-card">
+                            <h4>${review.name} <span style="float: right; color: var(--accent-cyan);">${starsStr} (${numRating}/5)</span></h4>
+                            <p>${review.text}</p>
+                        </div>
+                    `;
+                });
+
+                const averageRating = (totalRatingSum / totalReviews).toFixed(1);
+                statsBox.innerText = `${totalReviews} Total Reviews • ${averageRating} / 5`;
+                container.innerHTML = reviewsHTML;
+
+            } catch (error) {
+                console.error("Error: ", error);
+                statsBox.innerText = "Reviews unavailable";
+                container.innerHTML = "<p style='text-align: center; color: red;'>Error loading reviews.</p>";
+            }
+        }
+
+        loadApprovedReviews();
+    </script>
+
     <!-- JavaScript Functions -->
     <script>
-        // Dynamic Text Switcher Logic
         const props = [
             "Transform Your Script into Cinematic Shorts",
             "AI Avatars That Speak Your Brand",
@@ -932,12 +1040,10 @@
             }, 500);
         }
 
-        // Initialize first prop animation
         setTimeout(() => {
             propElement.classList.add('fade-in');
         }, 100);
 
-        // Switch text every 3.5 seconds
         setInterval(rotateProps, 3500);
 
         function toggleMenu() {
