@@ -548,6 +548,37 @@
             font-size: 1rem;
         }
 
+        .reviews-summary-badge {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            padding: 1rem 1.5rem;
+            border-radius: 12px;
+            margin-bottom: 1.5rem;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+            box-shadow: 0 0 20px rgba(0, 240, 255, 0.05);
+        }
+
+        .summary-item {
+            text-align: center;
+        }
+
+        .summary-number {
+            font-size: 1.4rem;
+            font-weight: 800;
+            color: var(--accent-cyan);
+        }
+
+        .summary-label {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
         .approved-review-card {
             background: var(--card-bg);
             border: 1px solid var(--border-color);
@@ -718,17 +749,17 @@
             </button>
             
             <nav id="navMenu">
-                <a onclick="showSection('home')">Home</a>
-                <a onclick="showSection('portfolio')">Showcase</a>
-                <a onclick="showSection('pricing')">Packages</a>
-                <a onclick="showSection('calculator')">Calculator</a>
-                <a onclick="showSection('tools')">Tech Stack</a>
-                <a onclick="showSection('faq')">FAQ</a>
-                <a onclick="showSection('reviews')">Reviews</a>
-                <a onclick="showSection('contact')">Contact</a>
+                <a onclick="navigateTo('home')">Home</a>
+                <a onclick="navigateTo('portfolio')">Showcase</a>
+                <a onclick="navigateTo('pricing')">Packages</a>
+                <a onclick="navigateTo('calculator')">Calculator</a>
+                <a onclick="navigateTo('tools')">Tech Stack</a>
+                <a onclick="navigateTo('faq')">FAQ</a>
+                <a onclick="navigateTo('reviews')">Reviews</a>
+                <a onclick="navigateTo('contact')">Contact</a>
             </nav>
 
-            <div class="brand-container" onclick="showSection('home')" style="cursor: pointer;">
+            <div class="brand-container" onclick="navigateTo('home')" style="cursor: pointer;">
                 <img src="https://lh3.googleusercontent.com/d/1nJmw3Fc1yR7L3eH8epvcRI_w5bgAEiAC=s1000" alt="Seni & Mahe AI" class="brand-logo">
                 <div class="brand-name">Seni & Mahe <span>AI</span></div>
             </div>
@@ -747,8 +778,8 @@
             <h1>Crafting Compelling Shorts With <span class="glow-text">AI-Powered Video</span></h1>
             <p>Specializing in YouTube Shorts, TikTok Reels, Cinematic Short-form Content, and Strategic Short Ads.</p>
             <div class="cta-btns">
-                <button onclick="showSection('pricing')" class="btn-primary">View Pricing</button>
-                <button onclick="showSection('portfolio')" class="btn-secondary">Watch Showcase</button>
+                <button onclick="navigateTo('pricing')" class="btn-primary">View Pricing</button>
+                <button onclick="navigateTo('portfolio')" class="btn-secondary">Watch Showcase</button>
             </div>
         </div>
     </section>
@@ -789,21 +820,21 @@
                 <div class="price-amount">LKR 2,500 - 7,500</div>
                 <div class="price-duration">DURATION: 30 - 60 SECONDS</div>
                 <div class="price-desc">Shorts / Reels using basic AI Voiceovers, Scripts, and AI Images/Videos.</div>
-                <button onclick="showSection('contact')" class="btn-secondary">Get Started</button>
+                <button onclick="navigateTo('contact')" class="btn-secondary">Get Started</button>
             </div>
             <div class="pricing-card featured">
                 <div class="price-title">Standard Package</div>
                 <div class="price-amount">LKR 7,500 - 17,500</div>
                 <div class="price-duration">DURATION: 1 - 3 MINUTES</div>
                 <div class="price-desc">High-quality AI Presenter (Avatar), Natural Voice, Background Music, Subtitles & Full HD. Perfect for Social Media Ads & Explainer Videos.</div>
-                <button onclick="showSection('contact')" class="btn-primary">Order Standard</button>
+                <button onclick="navigateTo('contact')" class="btn-primary">Order Standard</button>
             </div>
             <div class="pricing-card">
                 <div class="price-title">Pro Package</div>
                 <div class="price-amount">LKR 17,500 - 40,000+</div>
                 <div class="price-duration">DURATION: 3 - 10+ MINUTES</div>
                 <div class="price-desc">Custom AI Avatars (Clone yourself/voice), Advanced FX Editing, Scriptwriting & 2K Quality. Best for Business & YouTube Long-form.</div>
-                <button onclick="showSection('contact')" class="btn-secondary">Contact Pro</button>
+                <button onclick="navigateTo('contact')" class="btn-secondary">Contact Pro</button>
             </div>
         </div>
     </section>
@@ -898,11 +929,11 @@
                 <div class="form-group">
                     <select id="reviewRating" required>
                         <option value="" disabled selected>Select Rating</option>
-                        <option value="⭐⭐⭐⭐⭐ (5/5)">⭐⭐⭐⭐⭐ (5/5)</option>
-                        <option value="⭐⭐⭐⭐ (4/5)">⭐⭐⭐⭐ (4/5)</option>
-                        <option value="⭐⭐⭐ (3/5)">⭐⭐⭐ (3/5)</option>
-                        <option value="⭐⭐ (2/5)">⭐⭐ (2/5)</option>
-                        <option value="⭐ (1/5)">⭐ (1/5)</option>
+                        <option value="5">⭐⭐⭐⭐⭐ (5/5)</option>
+                        <option value="4">⭐⭐⭐⭐ (4/5)</option>
+                        <option value="3">⭐⭐⭐ (3/5)</option>
+                        <option value="2">⭐⭐ (2/5)</option>
+                        <option value="1">⭐ (1/5)</option>
                     </select>
                 </div>
                 <div class="form-group">
@@ -914,7 +945,19 @@
         </div>
 
         <div style="max-width: 600px; margin: 0 auto;">
-            <h3 style="margin-bottom: 1.5rem; text-align: center;">Client Testimonials</h3>
+            <h3 style="margin-bottom: 1rem; text-align: center;">Client Testimonials</h3>
+            
+            <div class="reviews-summary-badge" id="reviewsSummaryBadge">
+                <div class="summary-item">
+                    <div class="summary-number" id="totalReviewsCount">0</div>
+                    <div class="summary-label">Total Reviews</div>
+                </div>
+                <div class="summary-item">
+                    <div class="summary-number" id="avgRatingScore">0.0 / 5</div>
+                    <div class="summary-label" id="avgStarsDisplay">☆☆☆☆☆</div>
+                </div>
+            </div>
+
             <div id="reviewsContainer">
                 <p style="text-align: center; color: var(--text-muted);">Loading reviews...</p>
             </div>
@@ -982,7 +1025,6 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getFirestore, collection, addDoc, getDocs, query, where } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-        // ඔබේ Firebase විස්තර මෙහි ස්ථිරවම ඇතුළත් කර ඇත
         const firebaseConfig = {
             apiKey: "AIzaSyD_ZZhD8bxE4amKBsPtunpl7eGLS6d0gZo",
             authDomain: "seni-and-mahe-ai.firebaseapp.com",
@@ -999,21 +1041,21 @@
         reviewForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             const name = document.getElementById('reviewerName').value;
-            const rating = document.getElementById('reviewRating').value;
+            const ratingVal = parseInt(document.getElementById('reviewRating').value);
             const text = document.getElementById('reviewText').value;
             const msgBox = document.getElementById('reviewResponseMessage');
 
             try {
                 await addDoc(collection(db, "reviews"), {
                     name: name,
-                    rating: rating,
+                    rating: ratingVal,
                     text: text,
                     status: "pending",
                     createdAt: new Date()
                 });
 
                 msgBox.style.color = "#00ff80";
-                msgBox.innerText = "✅ ඔබේ රිවීව් එක සාර්ථකව යොමු කරන ලදී! අපගේ අනුමැතියෙන් පසු එය වෙබ් අඩවියේ පෙන්වනු ඇත. ස්ਤූතියි!";
+                msgBox.innerText = "✅ ඔබේ රිවීව් එක සාර්ථකව යොමු කරන ලදී! අපගේ අනුමැතියෙන් පසු එය වෙබ් අඩවියේ පෙන්වනු ඇත. ස්තූතියි!";
                 reviewForm.reset();
             } catch (error) {
                 console.error("Error adding review: ", error);
@@ -1024,27 +1066,59 @@
 
         async function loadApprovedReviews() {
             const container = document.getElementById('reviewsContainer');
+            const totalCountEl = document.getElementById('totalReviewsCount');
+            const avgScoreEl = document.getElementById('avgRatingScore');
+            const avgStarsEl = document.getElementById('avgStarsDisplay');
+            
             container.innerHTML = "";
 
             try {
                 const q = query(collection(db, "reviews"), where("status", "==", "approved"));
-                const querySnapshot = await getDocs(q);
+                const querySnapshot = dataGetCheck = await getDocs(q);
                 
-                if (querySnapshot.empty) {
+                const totalReviews = querySnapshot.size;
+                totalCountEl.innerText = totalReviews;
+
+                if (totalReviews === 0) {
+                    avgScoreEl.innerText = "0.0 / 5";
+                    avgStarsEl.innerText = "☆☆☆☆☆";
                     container.innerHTML = "<p style='text-align: center; color: var(--text-muted);'>තවම ප්‍රදර්ශනය කිරීමට අදහස් නොමැත.</p>";
                     return;
                 }
 
+                let totalRatingSum = 0;
+                let reviewsHTML = "";
+
                 querySnapshot.forEach((doc) => {
                     const review = doc.data();
-                    const div = document.createElement('div');
-                    div.className = "approved-review-card";
-                    div.innerHTML = `
-                        <h4>${review.name} <span style="font-size: 0.85rem; float: right; color: var(--accent-cyan);">${review.rating}</span></h4>
-                        <p>${review.text}</p>
+                    const ratingNum = Number(review.rating) || 5;
+                    totalRatingSum += ratingNum;
+
+                    let starsString = "";
+                    for (let i = 1; i <= 5; i++) {
+                        starsString += (i <= ratingNum) ? "⭐" : "☆";
+                    }
+
+                    reviewsHTML += `
+                        <div class="approved-review-card">
+                            <h4>${review.name} <span style="font-size: 0.85rem; float: right; color: var(--accent-cyan);">${starsString}</span></h4>
+                            <p>${review.text}</p>
+                        </div>
                     `;
-                    container.appendChild(div);
                 });
+
+                const averageRating = (totalRatingSum / totalReviews).toFixed(1);
+                avgScoreEl.innerText = averageRating + " / 5";
+
+                const roundedAvg = Math.round(averageRating);
+                let avgStarsString = "";
+                for (let i = 1; i <= 5; i++) {
+                    avgStarsString += (i <= roundedAvg) ? "⭐" : "☆";
+                }
+                avgStarsEl.innerText = avgStarsString;
+
+                container.innerHTML = reviewsHTML;
+
             } catch (error) {
                 console.error("Error loading reviews: ", error);
                 container.innerHTML = "<p style='text-align: center; color: red;'>අදහස් පූරණය කරගැනීමේ දෝෂයක් ඇත.</p>";
@@ -1085,7 +1159,8 @@
             navMenu.classList.toggle('active');
         }
 
-        function showSection(sectionId) {
+        // --- Back Button ගැටළුව විසඳීමට History API එකතු කරන ලද function එක ---
+        function navigateTo(sectionId, pushHistory = true) {
             const sections = document.querySelectorAll('.page-section');
             sections.forEach(sec => sec.classList.remove('active'));
 
@@ -1097,8 +1172,32 @@
             const navMenu = document.getElementById('navMenu');
             navMenu.classList.remove('active');
 
+            // බ්‍රව්සරයේ Back බොත්තම ක්‍රියාත්මක වීම සඳහා History State එකට එකතු කිරීම
+            if (pushHistory) {
+                history.pushState({ section: sectionId }, "", "#" + sectionId);
+            }
+
             window.scrollTo(0, 0);
         }
+
+        // බ්‍රව්සරයේ Back හෝ Forward බොත්තම ඔබන විට ස්වයංක්‍රීයව අදාළ Section එකට මාරුවීම
+        window.addEventListener('popstate', (event) => {
+            if (event.state && event.state.section) {
+                navigateTo(event.state.section, false);
+            } else {
+                navigateTo('home', false);
+            }
+        });
+
+        // පිටුව මුලින් Load වන විට URL එකේ ඇති Hash එකට අනුව අදාළ කොටස පෙන්වීම
+        window.addEventListener('DOMContentLoaded', () => {
+            const hash = window.location.hash.replace('#', '');
+            if (hash && document.getElementById(hash)) {
+                navigateTo(hash, false);
+            } else {
+                history.replaceState({ section: 'home' }, "", "#home");
+            }
+        });
 
         function calculatePrice() {
             const dur = parseInt(document.getElementById('calcDuration').value);
