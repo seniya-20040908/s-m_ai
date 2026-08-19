@@ -14,6 +14,18 @@
             --text-main: #f8fafc;
             --text-muted: #94a3b8;
             --border-color: rgba(0, 240, 255, 0.2);
+            --input-bg: #1e293b;
+        }
+
+        [data-theme="light"] {
+            --bg-color: #f1f5f9;
+            --card-bg: #ffffff;
+            --accent-cyan: #0284c7;
+            --accent-purple: #7c3aed;
+            --text-main: #0f172a;
+            --text-muted: #475569;
+            --border-color: rgba(2, 132, 199, 0.2);
+            --input-bg: #e2e8f0;
         }
 
         * {
@@ -41,6 +53,9 @@
             align-items: center;
             border-bottom: 1px solid var(--border-color);
             background: var(--card-bg);
+            max-width: 1200px;
+            margin: 0 auto;
+            border-radius: 0 0 16px 16px;
         }
 
         .back-btn {
@@ -56,6 +71,20 @@
         .back-btn:hover {
             background: var(--accent-cyan);
             color: #000;
+            box-shadow: 0 0 15px rgba(0, 240, 255, 0.4);
+        }
+
+        .brand-name {
+            font-size: 1.8rem;
+            font-weight: 800;
+            font-family: 'Rajdhani', sans-serif;
+            text-transform: uppercase;
+            color: var(--text-main);
+        }
+
+        .brand-name span {
+            color: var(--accent-cyan);
+            text-shadow: 0 0 15px rgba(0, 240, 255, 0.6);
         }
 
         .game-container {
@@ -96,6 +125,7 @@
             display: none;
             gap: 20px;
             margin-top: 15px;
+            justify-content: center;
         }
 
         .control-btn {
@@ -103,7 +133,7 @@
             border: 2px solid var(--accent-cyan);
             color: var(--accent-cyan);
             font-size: 1.5rem;
-            padding: 15px 30px;
+            padding: 15px 35px;
             border-radius: 12px;
             cursor: pointer;
             font-weight: bold;
@@ -120,12 +150,22 @@
                 display: flex;
             }
         }
+
+        footer {
+            text-align: center;
+            padding: 1.5rem;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            border-top: 1px solid var(--border-color);
+            margin-top: auto;
+            width: 100%;
+        }
     </style>
 </head>
 <body>
 
     <header>
-        <h2>Seni & Mahe <span>AI Games</span></h2>
+        <div class="brand-name">Seni & Mahe <span>AI Games</span></div>
         <a href="index.html" class="back-btn">← Back to Home</a>
     </header>
 
@@ -145,6 +185,10 @@
             <button class="control-btn" id="rightBtn">▶</button>
         </div>
     </div>
+
+    <footer>
+        &copy; 2026 Seni & Mahe AI Creations. All rights reserved.
+    </footer>
 
     <script>
         const canvas = document.getElementById('gameCanvas');
@@ -182,10 +226,10 @@
         const leftBtn = document.getElementById('leftBtn');
         const rightBtn = document.getElementById('rightBtn');
 
-        leftBtn.addEventListener('touchstart', () => { keys['ArrowLeft'] = true; });
-        leftBtn.addEventListener('touchend', () => { keys['ArrowLeft'] = false; });
-        rightBtn.addEventListener('touchstart', () => { keys['ArrowRight'] = true; });
-        rightBtn.addEventListener('touchend', () => { keys['ArrowRight'] = false; });
+        leftBtn.addEventListener('touchstart', (e) => { e.preventDefault(); keys['ArrowLeft'] = true; });
+        leftBtn.addEventListener('touchend', (e) => { e.preventDefault(); keys['ArrowLeft'] = false; });
+        rightBtn.addEventListener('touchstart', (e) => { e.preventDefault(); keys['ArrowRight'] = true; });
+        rightBtn.addEventListener('touchend', (e) => { e.preventDefault(); keys['ArrowRight'] = false; });
 
         // Spawn Traffic Cars
         function spawnTraffic() {
