@@ -5,11 +5,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Seni & Mahe AI Creations - Next-Gen AI Video Production</title>
     
-    <meta name="description" content="Specializing in YouTube Shorts, TikTok Reels, Cinematic Short-form Content, and Strategic Short Ads powered by cutting-edge AI.">
-    <meta name="keywords" content="AI Video, YouTube Shorts, AI Avatars, Video Production, Seni & Mahe AI">
-    <meta property="og:title" content="Seni & Mahe AI Creations">
-    <meta property="og:description" content="Crafting Compelling Shorts With AI-Powered Video">
+    <!-- SEO Meta Tags & Open Graph Tags -->
+    <meta name="description" content="Transform your scripts into cinematic YouTube Shorts, TikTok Reels, and AI video ads. Best AI video production services in Sri Lanka by Seni & Mahe AI.">
+    <meta name="keywords" content="Seni and Mahe AI, AI video production Sri Lanka, AI shorts, TikTok reels editing, Wathsilu Senitha, AI voiceover">
+    <meta name="author" content="Wathsilu Senitha">
+    
+    <meta property="og:title" content="Seni & Mahe AI | AI Video Production">
+    <meta property="og:description" content="Crafting Compelling Shorts With AI-Powered Video. Check out our packages and pricing!">
     <meta property="og:image" content="https://lh3.googleusercontent.com/d/1nJmw3Fc1yR7L3eH8epvcRI_w5bgAEiAC=s1000">
+    <meta property="og:url" content="https://seniya-20040908.github.io/s-m_ai/">
+    <meta property="og:type" content="website">
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -1055,7 +1060,6 @@
             navMenu.classList.toggle('active');
         }
 
-        // Back බටන් එක ක්‍රියාත්මක වන ආකාරය සැකසීම (History API)
         window.history.replaceState({ section: 'home' }, "", "");
 
         window.addEventListener('popstate', (event) => {
@@ -1108,10 +1112,8 @@
             const phone = document.getElementById('orderPhone').value;
             const msg = document.getElementById('orderMsg').value;
 
-            // WhatsApp පණිවිඩය සකස් කිරීම
             const text = `*New Order Request*%0A%0A*Name:* ${name}%0A*Email:* ${email}%0A*Phone:* ${phone}%0A*Requirements:*%0A${msg}`;
             
-            // ඔබේ WhatsApp අංකයට යැවීම
             window.open(`https://wa.me/94740676185?text=${text}`, '_blank');
             
             event.target.reset();
