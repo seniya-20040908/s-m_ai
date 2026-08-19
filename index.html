@@ -676,6 +676,7 @@
             
             <nav id="navMenu">
                 <a onclick="showSection('home')">Home</a>
+                <a href="about.html">About Us</a>
                 <a onclick="showSection('portfolio')">Showcase</a>
                 <a onclick="showSection('pricing')">Packages</a>
                 <a onclick="showSection('calculator')">Calculator</a>
@@ -683,6 +684,7 @@
                 <a onclick="showSection('faq')">FAQ</a>
                 <a onclick="showSection('reviews')">Reviews</a>
                 <a onclick="showSection('contact')">Contact</a>
+                <a href="privacy.html">Privacy Policy</a>
             </nav>
 
             <div class="brand-container" onclick="showSection('home')" style="cursor: pointer;">
@@ -927,7 +929,8 @@
 
     <footer>
         &copy; 2026 Seni & Mahe AI Creations. All rights reserved. | 
-        <a href="privacy.html" style="color: var(--text-muted); text-decoration: underline;">Privacy Policy</a>
+        <a href="privacy.html" style="color: var(--text-muted); text-decoration: underline;">Privacy Policy</a> | 
+        <a href="about.html" style="color: var(--text-muted); text-decoration: underline;">About Us</a>
     </footer>
 
     <!-- Firebase & Scripts -->
@@ -1057,7 +1060,6 @@
             navMenu.classList.toggle('active');
         }
 
-        // Back බටන් එක ක්‍රියාත්මක වන ආකාරය සැකසීම (History API)
         window.history.replaceState({ section: 'home' }, "", "");
 
         window.addEventListener('popstate', (event) => {
@@ -1110,10 +1112,8 @@
             const phone = document.getElementById('orderPhone').value;
             const msg = document.getElementById('orderMsg').value;
 
-            // WhatsApp පණිවිඩය සකස් කිරීම
             const text = `*New Order Request*%0A%0A*Name:* ${name}%0A*Email:* ${email}%0A*Phone:* ${phone}%0A*Requirements:*%0A${msg}`;
             
-            // ඔබේ WhatsApp අංකයට යැවීම
             window.open(`https://wa.me/94740676185?text=${text}`, '_blank');
             
             event.target.reset();
