@@ -1074,7 +1074,7 @@
 
             try {
                 const q = query(collection(db, "reviews"), where("status", "==", "approved"));
-                const querySnapshot = dataGetCheck = await getDocs(q);
+                const querySnapshot = await getDocs(q);
                 
                 const totalReviews = querySnapshot.size;
                 totalCountEl.innerText = totalReviews;
@@ -1159,7 +1159,6 @@
             navMenu.classList.toggle('active');
         }
 
-        // --- Back Button ගැටළුව විසඳීමට History API එකතු කරන ලද function එක ---
         function navigateTo(sectionId, pushHistory = true) {
             const sections = document.querySelectorAll('.page-section');
             sections.forEach(sec => sec.classList.remove('active'));
@@ -1172,7 +1171,6 @@
             const navMenu = document.getElementById('navMenu');
             navMenu.classList.remove('active');
 
-            // බ්‍රව්සරයේ Back බොත්තම ක්‍රියාත්මක වීම සඳහා History State එකට එකතු කිරීම
             if (pushHistory) {
                 history.pushState({ section: sectionId }, "", "#" + sectionId);
             }
@@ -1180,7 +1178,6 @@
             window.scrollTo(0, 0);
         }
 
-        // බ්‍රව්සරයේ Back හෝ Forward බොත්තම ඔබන විට ස්වයංක්‍රීයව අදාළ Section එකට මාරුවීම
         window.addEventListener('popstate', (event) => {
             if (event.state && event.state.section) {
                 navigateTo(event.state.section, false);
@@ -1189,7 +1186,6 @@
             }
         });
 
-        // පිටුව මුලින් Load වන විට URL එකේ ඇති Hash එකට අනුව අදාළ කොටස පෙන්වීම
         window.addEventListener('DOMContentLoaded', () => {
             const hash = window.location.hash.replace('#', '');
             if (hash && document.getElementById(hash)) {
