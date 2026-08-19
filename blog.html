@@ -1,115 +1,133 @@
 <!DOCTYPE html>
-<html lang="si">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Blog - AI ලිපි එකතුව</title>
+    <title>Blog - AI Articles Collection</title>
     <link rel="stylesheet" href="style.css">
     <style>
-        /* බ්ලොග් පිටුවට අදාළ මූලික මෝස්තර (Styles) */
+        /* Dark theme and styling matching the main website */
         body {
-            font-family: Arial, sans-serif;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             line-height: 1.6;
             margin: 0;
             padding: 0;
-            background-color: #f9f9f9;
+            background-color: #121212;
+            color: #e0e0e0;
         }
         nav {
-            background: #333;
+            background: #1f1f1f;
             color: #fff;
-            padding: 1rem;
+            padding: 1.2rem;
             text-align: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.3);
         }
         nav a {
-            color: #fff;
+            color: #00bcd4;
             text-decoration: none;
-            margin: 0 15px;
+            margin: 0 20px;
             font-weight: bold;
+            font-size: 1.1rem;
+            transition: color 0.3s;
+        }
+        nav a:hover {
+            color: #ffffff;
         }
         .container {
             max-width: 1000px;
-            margin: 2rem auto;
+            margin: 2.5rem auto;
             padding: 0 20px;
         }
         h1 {
             text-align: center;
-            color: #333;
-            margin-bottom: 2rem;
+            color: #ffffff;
+            margin-bottom: 2.5rem;
+            font-size: 2.2rem;
         }
         .blog-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 20px;
+            gap: 25px;
         }
         .blog-card {
-            background: #fff;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            background: #1e1e1e;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.4);
+            border: 1px solid #333;
+            transition: transform 0.3s;
+        }
+        .blog-card:hover {
+            transform: translateY(-5px);
         }
         .blog-card h3 {
             margin-top: 0;
-            color: #2c3e50;
+            color: #00bcd4;
+            font-size: 1.3rem;
+        }
+        .blog-card p {
+            color: #b0b0b0;
         }
         .read-more {
             display: inline-block;
-            margin-top: 10px;
-            color: #3498db;
+            margin-top: 15px;
+            color: #ff9800;
             text-decoration: none;
             font-weight: bold;
         }
         .read-more:hover {
             text-decoration: underline;
+            color: #ffb74d;
         }
     </style>
 </head>
 <body>
 
-    <!-- මෙනුව (Navigation Bar) -->
+    <!-- Navigation Bar -->
     <nav>
-        <a href="index.html">මුල් පිටුව</a>
-        <a href="about.html">අපි ගැන</a>
+        <a href="index.html">Home</a>
+        <a href="about.html">About Us</a>
         <a href="blog.html">Blog</a>
     </nav>
 
-    <!-- Blog අන්තර්ගතය -->
+    <!-- Blog Content -->
     <div class="container">
-        <h1>AI ලිපි එකතුව</h1>
+        <h1>AI Articles Collection</h1>
         <div class="blog-grid">
             
             <!-- 1. AI in Education -->
             <article class="blog-card">
                 <h3>AI in Education: Opportunities and Challenges</h3>
-                <p>අධ්‍යාපන ක්ෂේත්‍රයේදී AI තාක්ෂණය භාවිත කිරීමේ වාසි සහ අභියෝග පිළිබඳ විස්තරය.</p>
-                <a href="ai-in-education-opportunities-and-challenges.md" class="read-more">වැඩිදුර කියවන්න</a>
+                <p>A detailed look into the benefits and challenges of using AI technology in the education sector.</p>
+                <a href="ai-in-education.html" class="read-more">Read More</a>
             </article>
 
             <!-- 2. Beginner's Guide to AI Chatbots -->
             <article class="blog-card">
                 <h3>A Beginner's Guide to Using AI Chatbots in Daily Life</h3>
-                <p>දෛනික ජීවිතයේදී AI චැට්බෝට් (AI Chatbots) භාවිත කරන ආකාරය පිළිබඳ ආරම්භකයින් සඳහා මාර්ගෝපදේශයක්.</p>
-                <a href="beginners-guide-to-ai-chatbots.md" class="read-more">වැඩිදුර කියවන්න</a>
+                <p>A beginner-friendly guide on how to utilize AI chatbots effectively in everyday life.</p>
+                <a href="beginners-guide.html" class="read-more">Read More</a>
             </article>
 
             <!-- 3. Ethical Concerns -->
             <article class="blog-card">
                 <h3>Ethical Concerns Surrounding Artificial Intelligence</h3>
-                <p>කෘත්‍රිම බුද්ධිය (AI) භාවිතයේදී මතු වන සදාචාරාත්මක ගැටළු සහ පෞද්ගලිකත්වය පිළිබඳ විමසුමක්.</p>
-                <a href="ethical-concerns-surrounding-artificial-intelligence.md" class="read-more">වැඩිදුර කියවන්න</a>
+                <p>An exploration of ethical issues and privacy concerns raised by the use of artificial intelligence.</p>
+                <a href="ethical-concerns.html" class="read-more">Read More</a>
             </article>
 
             <!-- 4. Changing the Way We Work -->
             <article class="blog-card">
                 <h3>How AI Is Changing the Way We Work</h3>
-                <p>රැකියා ස්ථාන සහ වැඩ කරන ආකාරය AI තාක්ෂණය මඟින් වෙනස් වන ආකාරය.</p>
-                <a href="how-ai-is-changing-the-way-we-work.md" class="read-more">වැඩිදුර කියවන්න</a>
+                <p>How workplaces and working methods are transforming through the power of AI technology.</p>
+                <a href="how-ai-changes-work.html" class="read-more">Read More</a>
             </article>
 
             <!-- 5. Future of AI in Healthcare -->
             <article class="blog-card">
                 <h3>The Future of AI in Healthcare</h3>
-                <p>සෞඛ්‍ය සේවා ක්ෂේත්‍රයේ අනාගතය හැඩගැස්වීමේදී AI තාක්ෂණයේ දායකත්වය.</p>
-                <a href="the-future-of-ai-in-healthcare.md" class="read-more">වැඩිදුර කියවන්න</a>
+                <p>The impact and contributions of AI technology in shaping the future of healthcare services.</p>
+                <a href="future-of-ai-healthcare.html" class="read-more">Read More</a>
             </article>
 
         </div>
