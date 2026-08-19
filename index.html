@@ -3,143 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Client Testimonials & Reviews</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #0f172a;
-            color: #ffffff;
-            margin: 0;
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-        .container {
-            width: 100%;
-            max-width: 600px;
-            background: #1e293b;
-            padding: 20px;
-            border-radius: 12px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-            margin-top: 20px;
-        }
-        h2 {
-            text-align: center;
-            color: #38bdf8;
-        }
-        .form-group {
-            margin-bottom: 15px;
-        }
-        label {
-            display: block;
-            margin-bottom: 5px;
-            color: #94a3b8;
-        }
-        input, textarea, select {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid #334155;
-            background: #0f172a;
-            color: #fff;
-            border-radius: 6px;
-        }
-        button {
-            background: #38bdf8;
-            color: #0f172a;
-            border: none;
-            padding: 10px 15px;
-            font-weight: bold;
-            border-radius: 6px;
-            cursor: pointer;
-            width: 100%;
-        }
-        button:hover {
-            background: #0ea5e9;
-        }
-        .message {
-            margin-top: 15px;
-            padding: 10px;
-            border-radius: 6px;
-            text-align: center;
-            display: none;
-        }
-        .success {
-            background: #d4edda;
-            color: #155724;
-            border: 1px solid #c3e6cb;
-        }
-        .error {
-            background: #f8d7da;
-            color: #721c24;
-            border: 1px solid #f5c6cb;
-        }
-        .reviews-list {
-            margin-top: 20px;
-        }
-        .review-card {
-            background: #0f172a;
-            padding: 15px;
-            border-radius: 8px;
-            margin-bottom: 10px;
-            border: 1px solid #334155;
-        }
-        .review-header {
-            display: flex;
-            justify-content: space-between;
-            font-weight: bold;
-            color: #38bdf8;
-        }
-        .stars {
-            color: #fbbf24;
-        }
-    </style>
-</head>
-<body>
-
-    <div class="container">
-        <h2>Submit Your Review</h2>
-        <form id="reviewForm">
-            <div class="form-group">
-                <label for="name">Your Name</label>
-                <input type="text" id="name" required placeholder="Enter your name">
-            </div>
-            <div class="form-group">
-                <label for="rating">Rating (1 to 5)</label>
-                <select id="rating">
-                    <option value="5">⭐⭐⭐⭐⭐ (5/5)</option>
-                    <option value="4">⭐⭐⭐⭐ (4/5)</option>
-                    <option value="3">⭐⭐⭐ (3/5)</option>
-                    <option value="2">⭐⭐ (2/5)</option>
-                    <option value="⭐">⭐ (1/5)</option>
-                </select>
-            </div>
-            <div class="form-group">
-                <label for="text">Your Review</label>
-                <textarea id="text" rows="4" required placeholder="Write your review here..."></textarea>
-            </div>
-            <button type="submit">Submit Review</button>
-        </form>
-        <div id="formMessage" class="message"></div>
-    </div>
-
-    <div class="container">
-        <h2>Client Testimonials</h2>
-        <div style="text-align: center; margin-bottom: 15px;">
-            <span id="totalReviews" style="font-size: 24px; font-weight: bold; color: #38bdf8;">0</span> Total Reviews
-            <div id="avgRating" style="font-size: 20px; color: #fbbf24; margin-top: 5px;">0.0 / 5</div>
-        </div>
-        <div id="reviewsContainer" class="reviews-list">
-            <!-- Approved reviews will load here -->
-        </div>
-    </div>
-
-    <!-- Firebase SDK Scripts -->
+    <title>Client Testimonials</title>
+    <!-- Firebase SDK -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getFirestore, collection, addCollection, addDoc, getDocs, query, where } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, getDocs, query, where } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-        // මෙහි ඔබේ Firebase අදාළ අගයන් (Config) ඇතුළත් කර ඇත
         const firebaseConfig = {
             apiKey: "YOUR_API_KEY",
             authDomain: "YOUR_AUTH_DOMAIN",
@@ -152,57 +21,57 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
+        // Form Submit කිරීම
         const reviewForm = document.getElementById('reviewForm');
-        const formMessage = document.getElementById('formMessage');
-        const reviewsContainer = document.getElementById('reviewsContainer');
-        const totalReviewsEl = document.getElementById('totalReviews');
-        const avgRatingEl = document.getElementById('avgRating');
+        if (reviewForm) {
+            reviewForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const name = document.getElementById('name').value;
+                const ratingVal = document.getElementById('rating').value;
+                const text = document.getElementById('text').value;
+                const formMessage = document.getElementById('formMessage');
 
-        // Review Form Submit කිරීම
-        reviewForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const name = document.getElementById('name').value;
-            const ratingVal = document.getElementById('rating').value;
-            const text = document.getElementById('text').value;
-
-            // Rating අගය අංකයක් බවට පත් කර ගැනීම
-            let ratingNumber = 5;
-            if (typeof ratingVal === 'number') {
-                ratingNumber = ratingVal;
-            } else {
+                let ratingNumber = 5;
                 const parsed = parseInt(ratingVal);
                 ratingNumber = isNaN(parsed) ? 5 : parsed;
-            }
 
-            try {
-                await addDoc(collection(db, "reviews"), {
-                    name: name,
-                    rating: ratingNumber,
-                    text: text,
-                    status: "pending", // අනුමත වන තෙක් pending ලෙස වැටේ
-                    createdAt: new Date()
-                });
+                try {
+                    await addDoc(collection(db, "reviews"), {
+                        name: name,
+                        rating: ratingNumber,
+                        text: text,
+                        status: "pending",
+                        createdAt: new Date()
+                    });
 
-                formMessage.style.display = 'block';
-                formMessage.className = 'message success';
-                // ඔබ ඉල්ලූ පරිදි ඉංග්‍රීසි මැසේජ් එක මෙහි යොදා ඇත:
-                formMessage.innerHTML = "✅ Your review has been successfully submitted! It will appear publicly after approval. Thank you!";
-                reviewForm.reset();
-            } catch (error) {
-                console.error("Error adding document: ", error);
-                formMessage.style.display = 'block';
-                formMessage.className = 'message error';
-                formMessage.innerHTML = "❌ Error submitting review. Please try again.";
-            }
-        });
+                    if (formMessage) {
+                        formMessage.style.display = 'block';
+                        formMessage.style.color = '#22c55e'; // කොළ පාට
+                        formMessage.innerHTML = "✅ Your review has been successfully submitted! It will appear publicly after approval. Thank you!";
+                    }
+                    reviewForm.reset();
+                } catch (error) {
+                    console.error("Error adding document: ", error);
+                    if (formMessage) {
+                        formMessage.style.display = 'block';
+                        formMessage.style.color = '#ef4444';
+                        formMessage.innerHTML = "❌ Error submitting review. Please try again.";
+                    }
+                }
+            });
+        }
 
-        // අනුමත වූ (Approved) රිවීව්ස් පමණක් වෙබ් අඩවියේ පෙන්වීම
+        // Approved Reviews ලෝඩ් කර ගැනීම
         async function loadApprovedReviews() {
+            const reviewsContainer = document.getElementById('reviewsContainer');
+            const totalReviewsEl = document.getElementById('totalReviews');
+            const avgRatingEl = document.getElementById('avgRating');
+
             try {
                 const q = query(collection(db, "reviews"), where("status", "==", "approved"));
                 const querySnapshot = await getDocs(q);
                 
-                reviewsContainer.innerHTML = '';
+                if (reviewsContainer) reviewsContainer.innerHTML = '';
                 let total = 0;
                 let ratingSum = 0;
 
@@ -210,44 +79,47 @@
                     const review = doc.data();
                     total++;
                     
-                    let rNum = 5;
-                    if (typeof review.rating === 'number') {
-                        rNum = review.rating;
-                    } else if (typeof review.rating === 'string') {
-                        const p = parseInt(review.rating);
-                        rNum = isNaN(p) ? 5 : p;
-                    }
+                    let rNum = typeof review.rating === 'number' ? review.rating : (parseInt(review.rating) || 5);
                     ratingSum += rNum;
 
                     const starsHtml = '⭐'.repeat(rNum);
 
-                    const card = document.createElement('div');
-                    card.className = 'review-card';
-                    card.innerHTML = `
-                        <div class="review-header">
-                            <span>${review.name}</span>
-                            <span class="stars">${starsHtml}</span>
-                        </div>
-                        <p style="margin-top: 8px; color: #cbd5e1;">${review.text}</p>
-                    `;
-                    reviewsContainer.appendChild(card);
+                    if (reviewsContainer) {
+                        const card = document.createElement('div');
+                        card.style.cssText = "background: rgba(255,255,255,0.05); padding: 15px; border-radius: 8px; margin-bottom: 10px;";
+                        card.innerHTML = `
+                            <div style="display: flex; justify-content: space-between; font-weight: bold; color: #38bdf8;">
+                                <span>${review.name}</span>
+                                <span>${starsHtml}</span>
+                            </div>
+                            <p style="margin-top: 8px; color: #e2e8f0;">${review.text}</p>
+                        `;
+                        reviewsContainer.appendChild(card);
+                    }
                 });
 
-                totalReviewsEl.textContent = total;
-                if (total > 0) {
-                    const avg = (ratingSum / total).toFixed(1);
-                    avgRatingEl.textContent = `${avg} / 5`;
-                } else {
-                    avgRatingEl.textContent = `0.0 / 5`;
+                if (totalReviewsEl) totalReviewsEl.textContent = total;
+                if (avgRatingEl) {
+                    if (total > 0) {
+                        const avg = (ratingSum / total).toFixed(1);
+                        avgRatingEl.textContent = `${avg} / 5`;
+                    } else {
+                        avgRatingEl.textContent = `0.0 / 5`;
+                    }
                 }
 
             } catch (error) {
                 console.error("Error loading reviews: ", error);
-                reviewsContainer.innerHTML = `<p style="text-align: center; color: #f8d7da;">අදහස් පූරණය කරගැනීමේ දෝෂයක් ඇත.</p>`;
+                if (reviewsContainer) {
+                    reviewsContainer.innerHTML = `<p style="text-align: center; color: #ef4444;">අදහස් පූරණය කරගැනීමේ දෝෂයක් ඇත.</p>`;
+                }
             }
         }
 
         loadApprovedReviews();
     </script>
+</head>
+<body>
+    <!-- ඔබගේ මුල් ඩිසයිනර් ස්ටයිල්ස් සහ කන්ටේනර් මෙහි ඇත -->
 </body>
 </html>
