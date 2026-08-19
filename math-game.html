@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Math Speed Challenge - Seni & Mahe AI Games</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Rajdhani:wght@500;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #070a0f;
+            --card-bg: #0f172a;
+            --accent-cyan: #00f0ff;
+            --accent-purple: #7000ff;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --border-color: rgba(0, 240, 255, 0.2);
+        }
+
+        [data-theme="light"] {
+            --bg-color: #f1f5f9;
+            --card-bg: #ffffff;
+            --accent-cyan: #0284c7;
+            --accent-purple: #7c3aed;
+            --text-main: #0f172a;
+            --text-muted: #475569;
+            --border-color: rgba(2, 132, 199, 0.2);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Outfit', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        header {
+            width: 100%;
+            padding: 1.2rem 5%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border-color);
+            background: var(--card-bg);
+            max-width: 1200px;
+            margin: 0 auto;
+            border-radius: 0 0 16px 16px;
+        }
+
+        .back-btn {
+            color: var(--accent-cyan);
+            text-decoration: none;
+            font-weight: 600;
+            border: 1px solid var(--border-color);
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            transition: 0.3s;
+        }
+
+        .back-btn:hover {
+            background: var(--accent-cyan);
+            color: #000;
+            box-shadow: 0 0 15px rgba(0, 240, 255, 0.4);
+        }
+
+        .brand-name {
+            font-size: 1.8rem;
+            font-weight: 800;
+            font-family: 'Rajdhani', sans-serif;
+            text-transform: uppercase;
+            color: var(--text-main);
+        }
+
+        .brand-name span {
+            color: var(--accent-cyan);
+            text-shadow: 0 0 15px rgba(0, 240, 255, 0.6);
+        }
+
+        .game-container {
+            margin: 3rem auto;
+            text-align: center;
+            max-width: 600px;
+            width: 90%;
+            background: var(--card-bg);
+            padding: 2.5rem;
+            border-radius: 20px;
+            border: 2px solid var(--border-color);
+            box-shadow: 0 0 35px rgba(0, 240, 255, 0.15);
+        }
+
+        .stats-bar {
+            display: flex;
+            justify-content: space-between;
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 1.3rem;
+            font-weight: 700;
+            margin-bottom: 2rem;
+            color: var(--accent-cyan);
+        }
+
+        .math-problem {
+            font-size: 3rem;
+            font-family: 'Rajdhani', sans-serif;
+            font-weight: 800;
+            margin-bottom: 2rem;
+            color: #fff;
+            text-shadow: 0 0 20px rgba(0, 240, 255, 0.5);
+        }
+
+        .input-group {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+        }
+
+        .math-input {
+            width: 200px;
+            padding: 12px 15px;
+            background: #1e293b;
+            border: 2px solid var(--border-color);
+            border-radius: 10px;
+            color: #fff;
+            font-size: 1.5rem;
+            text-align: center;
+            outline: none;
+        }
+
+        .math-input:focus {
+            border-color: var(--accent-cyan);
+            box-shadow: 0 0 15px rgba(0, 240, 255, 0.4);
+        }
+
+        .submit-btn {
+            background: var(--accent-cyan);
+            color: #000;
+            border: none;
+            padding: 0 25px;
+            font-weight: 700;
+            font-size: 1.2rem;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .submit-btn:hover {
+            background: #fff;
+            box-shadow: 0 0 15px var(--accent-cyan);
+        }
+
+        .start-screen {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1.5rem;
+        }
+
+        .start-btn {
+            padding: 1rem 2.5rem;
+            background: var(--accent-cyan);
+            color: #000;
+            font-size: 1.3rem;
+            font-weight: 800;
+            font-family: 'Rajdhani', sans-serif;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            box-shadow: 0 0 20px rgba(0, 240, 255, 0.4);
+            transition: 0.3s;
+        }
+
+        .start-btn:hover {
+            background: #fff;
+            box-shadow: 0 0 30px var(--accent-cyan);
+        }
+
+        footer {
+            text-align: center;
+            padding: 1.2rem;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            border-top: 1px solid var(--border-color);
+            margin-top: auto;
+            width: 100%;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="brand-name">AI Math <span>Challenge</span></div>
+        <a href="games.html" class="back-btn">← Back to Games Hub</a>
+    </header>
+
+    <div class="game-container">
+        <div id="startScreen" class="start-screen">
+            <h2 style="font-family: 'Rajdhani', sans-serif; font-size: 2rem;">TEST YOUR SPEED WITH AI!</h2>
+            <p style="color: var(--text-muted);">Solve as many math problems as you can before time runs out (30 Seconds).</p>
+            <button class="start-btn" onclick="startGame()">START GAME 🎮</button>
+        </div>
+
+        <div id="gamePlayScreen" style="display: none;">
+            <div class="stats-bar">
+                <span>SCORE: <span id="scoreVal">0</span></span>
+                <span>TIME: <span id="timerVal" style="color: #ff0055;">30</span>s</span>
+            </div>
+
+            <div class="math-problem" id="problemBox">5 + 3 = ?</div>
+
+            <div class="input-group">
+                <input type="number" id="ansInput" class="math-input" placeholder="Ans" autocomplete="off">
+                <button class="submit-btn" onclick="checkAnswer()">GO 🚀</button>
+            </div>
+        </div>
+
+        <div id="gameOverScreen" style="display: none;">
+            <h2 style="font-family: 'Rajdhani', sans-serif; font-size: 2.5rem; color: #ff0055; margin-bottom: 1rem;">TIME'S UP! ⏰</h2>
+            <p style="font-size: 1.2rem; margin-bottom: 1.5rem;">Your Final Score: <span id="finalScore" style="color: var(--accent-cyan); font-weight: bold;">0</span></p>
+            <button class="start-btn" onclick="startGame()">PLAY AGAIN 🔄</button>
+        </div>
+    </div>
+
+    <footer>
+        &copy; 2026 Seni & Mahe AI Creations. All rights reserved.
+    </footer>
+
+    <script>
+        let score = 0;
+        let timeLeft = 30;
+        let timerInterval;
+        let correctAnswer = 0;
+
+        const startScreen = document.getElementById('startScreen');
+        const gamePlayScreen = document.getElementById('gamePlayScreen');
+        const gameOverScreen = document.getElementById('gameOverScreen');
+        const scoreVal = document.getElementById('scoreVal');
+        const timerVal = document.getElementById('timerVal');
+        const problemBox = document.getElementById('problemBox');
+        const ansInput = document.getElementById('ansInput');
+        const finalScore = document.getElementById('finalScore');
+
+        ansInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') checkAnswer();
+        });
+
+        function startGame() {
+            score = 0;
+            timeLeft = 30;
+            scoreVal.innerText = score;
+            timerVal.innerText = timeLeft;
+            
+            startScreen.style.display = 'none';
+            gameOverScreen.style.display = 'none';
+            gamePlayScreen.style.display = 'block';
+            
+            generateProblem();
+            ansInput.focus();
+
+            clearInterval(timerInterval);
+            timerInterval = setInterval(() => {
+                timeLeft--;
+                timerVal.innerText = timeLeft;
+                if (timeLeft <= 0) {
+                    clearInterval(timerInterval);
+                    endGame();
+                }
+            }, 1000);
+        }
+
+        function generateProblem() {
+            const ops = ['+', '-', '*'];
+            const op = ops[Math.floor(Math.random() * ops.length)];
+            let num1, num2;
+
+            if (op === '+') {
+                num1 = Math.floor(Math.random() * 50) + 1;
+                num2 = Math.floor(Math.random() * 50) + 1;
+                correctAnswer = num1 + num2;
+            } else if (op === '-') {
+                num1 = Math.floor(Math.random() * 50) + 10;
+                num2 = Math.floor(Math.random() * num1) + 1; // Avoid negative numbers
+                correctAnswer = num1 - num2;
+            } else {
+                num1 = Math.floor(Math.random() * 10) + 1;
+                num2 = Math.floor(Math.random() * 10) + 1;
+                correctAnswer = num1 * num2;
+            }
+
+            problemBox.innerText = `${num1} ${op} ${num2} = ?`;
+        }
+
+        function checkAnswer() {
+            let userAns = parseInt(ansInput.value);
+            if (isNaN(userAns)) return;
+
+            if (userAns === correctAnswer) {
+                score += 10;
+                scoreVal.innerText = score;
+            }
+
+            ansInput.value = '';
+            generateProblem();
+        }
+
+        function endGame() {
+            gamePlayScreen.style.display = 'none';
+            gameOverScreen.style.display = 'block';
+            finalScore.innerText = score;
+        }
+    </script>
+</body>
+</html>
