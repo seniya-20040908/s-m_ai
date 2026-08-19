@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Neon Snake Game - Seni & Mahe AI Games</title>
+    <title>Classic Neon Snake - Seni & Mahe AI Games</title>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Rajdhani:wght@500;700;800&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -45,7 +45,7 @@
 
         header {
             width: 100%;
-            padding: 1.5rem 5%;
+            padding: 1.2rem 5%;
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -93,7 +93,7 @@
         .game-ui {
             display: flex;
             justify-content: space-between;
-            width: 600px;
+            width: 700px;
             max-width: 100%;
             margin: 0 auto 10px auto;
             font-size: 1.3rem;
@@ -106,7 +106,7 @@
             background: #111;
             border: 2px solid var(--accent-cyan);
             border-radius: 12px;
-            box-shadow: 0 0 35px rgba(0, 240, 255, 0.3);
+            box-shadow: 0 0 40px rgba(0, 240, 255, 0.3);
             display: block;
             margin: 0 auto;
         }
@@ -120,9 +120,9 @@
         /* Mobile D-Pad Controls */
         .mobile-dpad {
             display: none;
-            grid-template-columns: repeat(3, 60px);
-            grid-template-rows: repeat(2, 60px);
-            gap: 10px;
+            grid-template-columns: repeat(3, 65px);
+            grid-template-rows: repeat(2, 65px);
+            gap: 12px;
             justify-content: center;
             margin-top: 15px;
         }
@@ -150,7 +150,7 @@
         .btn-down { grid-column: 2; grid-row: 2; }
         .btn-right { grid-column: 3; grid-row: 2; }
 
-        @media (max-width: 650px) {
+        @media (max-width: 750px) {
             .mobile-dpad {
                 display: grid;
             }
@@ -158,7 +158,7 @@
 
         footer {
             text-align: center;
-            padding: 1.5rem;
+            padding: 1.2rem;
             color: var(--text-muted);
             font-size: 0.9rem;
             border-top: 1px solid var(--border-color);
@@ -175,15 +175,15 @@
     </header>
 
     <div class="game-container">
-        <div class="game-ui" style="width: 600px;">
+        <div class="game-ui" style="width: 700px;">
             <span id="snakeScore">SCORE: 0</span>
             <span id="highScore">HIGH: 0</span>
         </div>
         
-        <!-- Full Screen Larger Canvas -->
-        <canvas id="snakeCanvas" width="600" height="450"></canvas>
+        <!-- Large Full Screen Canvas -->
+        <canvas id="snakeCanvas" width="700" height="500"></canvas>
         
-        <div class="controls-hint">Use Arrow Keys to move. Eat food to grow longer, but avoid walls and hitting your own body!</div>
+        <div class="controls-hint">Use Arrow Keys. Pass through walls to wrap around. Game Over <b>only</b> if you bite your own body!</div>
 
         <!-- Mobile Controls D-Pad -->
         <div class="mobile-dpad">
@@ -206,9 +206,9 @@
 
         const gridSize = 20;
         let snake = [
-            { x: 160, y: 160 },
-            { x: 140, y: 160 },
-            { x: 120, y: 160 }
+            { x: 200, y: 200 },
+            { x: 180, y: 200 },
+            { x: 160, y: 200 }
         ];
         let dx = gridSize;
         let dy = 0;
@@ -217,20 +217,18 @@
         let score = 0;
         let highScore = 0;
         let gameOver = false;
-        let changingDirection = false; // Prevents fast double-click self-collision bug
+        let changingDirection = false;
 
         function spawnFood() {
             foodX = Math.floor(Math.random() * (canvas.width / gridSize)) * gridSize;
             foodY = Math.floor(Math.random() * (canvas.height / gridSize)) * gridSize;
             
-            // Make sure food doesn't spawn on top of snake
             snake.forEach(part => {
                 if (part.x === foodX && part.y === foodY) spawnFood();
             });
         }
         spawnFood();
 
-        // Keyboard Controls
         window.addEventListener('keydown', changeDirection);
 
         function changeDirection(event) {
@@ -259,7 +257,6 @@
             }
         }
 
-        // Mobile Button Listeners
         document.getElementById('upBtn').addEventListener('click', () => { if (dy === 0) { dx = 0; dy = -gridSize; changingDirection = true; } });
         document.getElementById('leftBtn').addEventListener('click', () => { if (dx === 0) { dx = -gridSize; dy = 0; changingDirection = true; } });
         document.getElementById('downBtn').addEventListener('click', () => { if (dy === 0) { dx = 0; dy = gridSize; changingDirection = true; } });
@@ -279,7 +276,7 @@
                 moveSnake();
                 drawSnake();
                 main();
-            }, 100); // Speed of snake
+            }, 95);
         }
 
         function clearCanvas() {
@@ -289,19 +286,28 @@
 
         function drawSnake() {
             snake.forEach((part, index) => {
-                ctx.fillStyle = index === 0 ? '#00f0ff' : '#00a8ff'; // Head is cyan, body is blue
-                ctx.shadowBlur = 10;
+                ctx.fillStyle = index === 0 ? '#00f0ff' : '#00a8ff';
+                ctx.shadowBlur = 12;
                 ctx.shadowColor = '#00f0ff';
                 ctx.fillRect(part.x, part.y, gridSize - 2, gridSize - 2);
             });
-            ctx.shadowBlur = 0; // Reset shadow
+            ctx.shadowBlur = 0;
         }
 
         function moveSnake() {
-            const head = { x: snake[0].x + dx, y: snake[0].y + dy };
-            snake.unshift(head);
+            let headX = snake[0].x + dx;
+            let headY = snake[0].y + dy;
 
-            const hasEatenFood = snake[0].x === foodX && snake[0].y === foodY;
+            // Screen Wrapping (Biththin pita giyoth anith paththen enawa)
+            if (headX < 0) headX = canvas.width - gridSize;
+            if (headX >= canvas.width) headX = 0;
+            if (headY < 0) headY = canvas.height - gridSize;
+            if (headY >= canvas.height) headY = 0;
+
+            const newHead = { x: headX, y: headY };
+            snake.unshift(newHead);
+
+            const hasEatenFood = newHead.x === foodX && newHead.y === foodY;
             if (hasEatenFood) {
                 score += 10;
                 snakeScoreEl.innerText = "SCORE: " + score;
@@ -311,23 +317,16 @@
                 }
                 spawnFood();
             } else {
-                snake.pop(); // Removes last tail piece if not eating (keeps size same, grows when eating)
+                snake.pop(); // Kema kan nathi wita diga wadi nowී tail eka ain wei, kala wita diga wadi we
             }
         }
 
         function hasGameEnded() {
-            // Self collision check (thamange agama kawoth out wena thana)
+            // Self collision check (Tamange agema kawoth witharai out wenne)
             for (let i = 4; i < snake.length; i++) {
                 if (snake[i].x === snake[0].x && snake[i].y === snake[0].y) return true;
             }
-
-            // Wall collision check
-            const hitLeftWall = snake[0].x < 0;
-            const hitRightWall = snake[0].x >= canvas.width;
-            const hitToptWall = snake[0].y < 0;
-            const hitBottomWall = snake[0].y >= canvas.height;
-
-            return hitLeftWall || hitRightWall || hitToptWall || hitBottomWall;
+            return false; // Biththi walata out wenne natha
         }
 
         function drawFood() {
@@ -343,7 +342,7 @@
             ctx.fillRect(0, 0, canvas.width, canvas.height);
 
             ctx.fillStyle = '#ff0055';
-            ctx.font = 'bold 36px Rajdhani';
+            ctx.font = 'bold 38px Rajdhani';
             ctx.textAlign = 'center';
             ctx.fillText('GAME OVER', canvas.width / 2, canvas.height / 2 - 25);
 
@@ -356,7 +355,6 @@
             ctx.fillText('Click or Press Enter to Restart', canvas.width / 2, canvas.height / 2 + 55);
         }
 
-        // Restart on Click or Enter
         canvas.addEventListener('click', restartGame);
         window.addEventListener('keydown', (e) => {
             if (gameOver && e.key === 'Enter') restartGame();
@@ -365,9 +363,9 @@
         function restartGame() {
             if (gameOver) {
                 snake = [
-                    { x: 160, y: 160 },
-                    { x: 140, y: 160 },
-                    { x: 120, y: 160 }
+                    { x: 200, y: 200 },
+                    { x: 180, y: 200 },
+                    { x: 160, y: 200 }
                 ];
                 dx = gridSize;
                 dy = 0;
@@ -379,7 +377,6 @@
             }
         }
 
-        // Start Game
         main();
     </script>
 </body>
