@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Neon Snake Game - Seni & Mahe AI Games</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Rajdhani:wght@500;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #070a0f;
+            --card-bg: #0f172a;
+            --accent-cyan: #00f0ff;
+            --accent-purple: #7000ff;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --border-color: rgba(0, 240, 255, 0.2);
+        }
+
+        [data-theme="light"] {
+            --bg-color: #f1f5f9;
+            --card-bg: #ffffff;
+            --accent-cyan: #0284c7;
+            --accent-purple: #7c3aed;
+            --text-main: #0f172a;
+            --text-muted: #475569;
+            --border-color: rgba(2, 132, 199, 0.2);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Outfit', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        header {
+            width: 100%;
+            padding: 1.5rem 5%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border-color);
+            background: var(--card-bg);
+            max-width: 1200px;
+            margin: 0 auto;
+            border-radius: 0 0 16px 16px;
+        }
+
+        .back-btn {
+            color: var(--accent-cyan);
+            text-decoration: none;
+            font-weight: 600;
+            border: 1px solid var(--border-color);
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            transition: 0.3s;
+        }
+
+        .back-btn:hover {
+            background: var(--accent-cyan);
+            color: #000;
+            box-shadow: 0 0 15px rgba(0, 240, 255, 0.4);
+        }
+
+        .brand-name {
+            font-size: 1.8rem;
+            font-weight: 800;
+            font-family: 'Rajdhani', sans-serif;
+            text-transform: uppercase;
+            color: var(--text-main);
+        }
+
+        .brand-name span {
+            color: var(--accent-cyan);
+            text-shadow: 0 0 15px rgba(0, 240, 255, 0.6);
+        }
+
+        .game-container {
+            margin: 1.5rem 0;
+            text-align: center;
+        }
+
+        .game-ui {
+            display: flex;
+            justify-content: space-between;
+            width: 600px;
+            max-width: 100%;
+            margin: 0 auto 10px auto;
+            font-size: 1.3rem;
+            font-weight: 700;
+            font-family: 'Rajdhani', sans-serif;
+            color: var(--accent-cyan);
+        }
+
+        canvas {
+            background: #111;
+            border: 2px solid var(--accent-cyan);
+            border-radius: 12px;
+            box-shadow: 0 0 35px rgba(0, 240, 255, 0.3);
+            display: block;
+            margin: 0 auto;
+        }
+
+        .controls-hint {
+            color: var(--text-muted);
+            margin-top: 12px;
+            font-size: 0.95rem;
+        }
+
+        /* Mobile D-Pad Controls */
+        .mobile-dpad {
+            display: none;
+            grid-template-columns: repeat(3, 60px);
+            grid-template-rows: repeat(2, 60px);
+            gap: 10px;
+            justify-content: center;
+            margin-top: 15px;
+        }
+
+        .dpad-btn {
+            background: var(--card-bg);
+            border: 2px solid var(--accent-cyan);
+            color: var(--accent-cyan);
+            font-size: 1.5rem;
+            border-radius: 12px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 0 10px rgba(0, 240, 255, 0.2);
+        }
+
+        .dpad-btn:active {
+            background: var(--accent-cyan);
+            color: #000;
+        }
+
+        .btn-up { grid-column: 2; grid-row: 1; }
+        .btn-left { grid-column: 1; grid-row: 2; }
+        .btn-down { grid-column: 2; grid-row: 2; }
+        .btn-right { grid-column: 3; grid-row: 2; }
+
+        @media (max-width: 650px) {
+            .mobile-dpad {
+                display: grid;
+            }
+        }
+
+        footer {
+            text-align: center;
+            padding: 1.5rem;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            border-top: 1px solid var(--border-color);
+            margin-top: auto;
+            width: 100%;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="brand-name">Neon <span>Snake</span></div>
+        <a href="games.html" class="back-btn">← Back to Games Hub</a>
+    </header>
+
+    <div class="game-container">
+        <div class="game-ui" style="width: 600px;">
+            <span id="snakeScore">SCORE: 0</span>
+            <span id="highScore">HIGH: 0</span>
+        </div>
+        
+        <!-- Full Screen Larger Canvas -->
+        <canvas id="snakeCanvas" width="600" height="450"></canvas>
+        
+        <div class="controls-hint">Use Arrow Keys to move. Eat food to grow longer, but avoid walls and hitting your own body!</div>
+
+        <!-- Mobile Controls D-Pad -->
+        <div class="mobile-dpad">
+            <button class="dpad-btn btn-up" id="upBtn">▲</button>
+            <button class="dpad-btn btn-left" id="leftBtn">◀</button>
+            <button class="dpad-btn btn-down" id="downBtn">▼</button>
+            <button class="dpad-btn btn-right" id="rightBtn">▶</button>
+        </div>
+    </div>
+
+    <footer>
+        &copy; 2026 Seni & Mahe AI Creations. All rights reserved.
+    </footer>
+
+    <script>
+        const canvas = document.getElementById('snakeCanvas');
+        const ctx = canvas.getContext('2d');
+        const snakeScoreEl = document.getElementById('snakeScore');
+        const highScoreEl = document.getElementById('highScore');
+
+        const gridSize = 20;
+        let snake = [
+            { x: 160, y: 160 },
+            { x: 140, y: 160 },
+            { x: 120, y: 160 }
+        ];
+        let dx = gridSize;
+        let dy = 0;
+        let foodX = 0;
+        let foodY = 0;
+        let score = 0;
+        let highScore = 0;
+        let gameOver = false;
+        let changingDirection = false; // Prevents fast double-click self-collision bug
+
+        function spawnFood() {
+            foodX = Math.floor(Math.random() * (canvas.width / gridSize)) * gridSize;
+            foodY = Math.floor(Math.random() * (canvas.height / gridSize)) * gridSize;
+            
+            // Make sure food doesn't spawn on top of snake
+            snake.forEach(part => {
+                if (part.x === foodX && part.y === foodY) spawnFood();
+            });
+        }
+        spawnFood();
+
+        // Keyboard Controls
+        window.addEventListener('keydown', changeDirection);
+
+        function changeDirection(event) {
+            const keyPressed = event.key;
+            if (changingDirection) return;
+
+            if ((keyPressed === 'ArrowLeft' || keyPressed === 'a') && dx === 0) {
+                dx = -gridSize;
+                dy = 0;
+                changingDirection = true;
+            }
+            if ((keyPressed === 'ArrowUp' || keyPressed === 'w') && dy === 0) {
+                dx = 0;
+                dy = -gridSize;
+                changingDirection = true;
+            }
+            if ((keyPressed === 'ArrowRight' || keyPressed === 'd') && dx === 0) {
+                dx = gridSize;
+                dy = 0;
+                changingDirection = true;
+            }
+            if ((keyPressed === 'ArrowDown' || keyPressed === 's') && dy === 0) {
+                dx = 0;
+                dy = gridSize;
+                changingDirection = true;
+            }
+        }
+
+        // Mobile Button Listeners
+        document.getElementById('upBtn').addEventListener('click', () => { if (dy === 0) { dx = 0; dy = -gridSize; changingDirection = true; } });
+        document.getElementById('leftBtn').addEventListener('click', () => { if (dx === 0) { dx = -gridSize; dy = 0; changingDirection = true; } });
+        document.getElementById('downBtn').addEventListener('click', () => { if (dy === 0) { dx = 0; dy = gridSize; changingDirection = true; } });
+        document.getElementById('rightBtn').addEventListener('click', () => { if (dx === 0) { dx = gridSize; dy = 0; changingDirection = true; } });
+
+        function main() {
+            if (hasGameEnded()) {
+                gameOver = true;
+                drawGameOverScreen();
+                return;
+            }
+
+            changingDirection = false;
+            setTimeout(() => {
+                clearCanvas();
+                drawFood();
+                moveSnake();
+                drawSnake();
+                main();
+            }, 100); // Speed of snake
+        }
+
+        function clearCanvas() {
+            ctx.fillStyle = '#1e293b';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+        }
+
+        function drawSnake() {
+            snake.forEach((part, index) => {
+                ctx.fillStyle = index === 0 ? '#00f0ff' : '#00a8ff'; // Head is cyan, body is blue
+                ctx.shadowBlur = 10;
+                ctx.shadowColor = '#00f0ff';
+                ctx.fillRect(part.x, part.y, gridSize - 2, gridSize - 2);
+            });
+            ctx.shadowBlur = 0; // Reset shadow
+        }
+
+        function moveSnake() {
+            const head = { x: snake[0].x + dx, y: snake[0].y + dy };
+            snake.unshift(head);
+
+            const hasEatenFood = snake[0].x === foodX && snake[0].y === foodY;
+            if (hasEatenFood) {
+                score += 10;
+                snakeScoreEl.innerText = "SCORE: " + score;
+                if (score > highScore) {
+                    highScore = score;
+                    highScoreEl.innerText = "HIGH: " + highScore;
+                }
+                spawnFood();
+            } else {
+                snake.pop(); // Removes last tail piece if not eating (keeps size same, grows when eating)
+            }
+        }
+
+        function hasGameEnded() {
+            // Self collision check (thamange agama kawoth out wena thana)
+            for (let i = 4; i < snake.length; i++) {
+                if (snake[i].x === snake[0].x && snake[i].y === snake[0].y) return true;
+            }
+
+            // Wall collision check
+            const hitLeftWall = snake[0].x < 0;
+            const hitRightWall = snake[0].x >= canvas.width;
+            const hitToptWall = snake[0].y < 0;
+            const hitBottomWall = snake[0].y >= canvas.height;
+
+            return hitLeftWall || hitRightWall || hitToptWall || hitBottomWall;
+        }
+
+        function drawFood() {
+            ctx.fillStyle = '#ff0055';
+            ctx.shadowBlur = 15;
+            ctx.shadowColor = '#ff0055';
+            ctx.fillRect(foodX, foodY, gridSize - 2, gridSize - 2);
+            ctx.shadowBlur = 0;
+        }
+
+        function drawGameOverScreen() {
+            ctx.fillStyle = 'rgba(7, 10, 15, 0.9)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            ctx.fillStyle = '#ff0055';
+            ctx.font = 'bold 36px Rajdhani';
+            ctx.textAlign = 'center';
+            ctx.fillText('GAME OVER', canvas.width / 2, canvas.height / 2 - 25);
+
+            ctx.fillStyle = '#f8fafc';
+            ctx.font = '20px Outfit';
+            ctx.fillText('Final Score: ' + score, canvas.width / 2, canvas.height / 2 + 15);
+
+            ctx.fillStyle = '#00f0ff';
+            ctx.font = '16px Outfit';
+            ctx.fillText('Click or Press Enter to Restart', canvas.width / 2, canvas.height / 2 + 55);
+        }
+
+        // Restart on Click or Enter
+        canvas.addEventListener('click', restartGame);
+        window.addEventListener('keydown', (e) => {
+            if (gameOver && e.key === 'Enter') restartGame();
+        });
+
+        function restartGame() {
+            if (gameOver) {
+                snake = [
+                    { x: 160, y: 160 },
+                    { x: 140, y: 160 },
+                    { x: 120, y: 160 }
+                ];
+                dx = gridSize;
+                dy = 0;
+                score = 0;
+                snakeScoreEl.innerText = "SCORE: 0";
+                gameOver = false;
+                spawnFood();
+                main();
+            }
+        }
+
+        // Start Game
+        main();
+    </script>
+</body>
+</html>
