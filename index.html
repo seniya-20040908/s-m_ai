@@ -944,7 +944,7 @@
 
         const reviewForm = document.getElementById('reviewForm');
         reviewForm.addEventListener('submit', async (e) => {
-            e.preventDefault(); // මෙය නිසා FormSubmit හෝ වෙනත් පේජ් එකකට රීඩිරෙක්ට් වීම සම්පූර්ණයෙන්ම වැළකේ.
+            e.preventDefault();
             
             const name = document.getElementById('reviewerName').value;
             const ratingVal = parseInt(document.getElementById('reviewRating').value);
@@ -961,7 +961,7 @@
                 });
 
                 msgBox.style.color = "#00ff80";
-                msgBox.innerText = "✅ Review submitted successfully!";
+                msgBox.innerText = "✅ Review submitted successfully! (Will be displayed after approval)";
                 reviewForm.reset();
             } catch (error) {
                 console.error("Error: ", error);
@@ -1052,7 +1052,18 @@
             navMenu.classList.toggle('active');
         }
 
-        function showSection(sectionId) {
+        // Back බටන් එක ක්‍රියාත්මක වන ආකාරය සැකසීම (History API)
+        window.history.replaceState({ section: 'home' }, "", "");
+
+        window.addEventListener('popstate', (event) => {
+            if (event.state && event.state.section) {
+                showSection(event.state.section, false);
+            } else {
+                showSection('home', false);
+            }
+        });
+
+        function showSection(sectionId, pushHistory = true) {
             const sections = document.querySelectorAll('.page-section');
             sections.forEach(sec => sec.classList.remove('active'));
 
@@ -1065,6 +1076,10 @@
             navMenu.classList.remove('active');
 
             window.scrollTo(0, 0);
+
+            if (pushHistory) {
+                window.history.pushState({ section: sectionId }, "", "");
+            }
         }
 
         function calculatePrice() {
