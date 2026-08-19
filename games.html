@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Cyber Car Race - Seni & Mahe AI</title>
+    <title>AI Cyber Games - Seni & Mahe AI</title>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Rajdhani:wght@500;700;800&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -87,10 +87,41 @@
             text-shadow: 0 0 15px rgba(0, 240, 255, 0.6);
         }
 
-        .game-container {
-            margin: 2rem 0;
+        /* Game Switcher Tabs */
+        .game-tabs {
+            display: flex;
+            gap: 1rem;
+            margin: 2rem 0 1rem 0;
+        }
+
+        .tab-btn {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+            padding: 0.8rem 1.5rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 700;
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 1.1rem;
+            transition: 0.3s;
+        }
+
+        .tab-btn.active, .tab-btn:hover {
+            background: var(--accent-cyan);
+            color: #000;
+            border-color: var(--accent-cyan);
+            box-shadow: 0 0 15px rgba(0, 240, 255, 0.4);
+        }
+
+        .game-section {
+            display: none;
             text-align: center;
-            position: relative;
+            margin-bottom: 3rem;
+        }
+
+        .game-section.active {
+            display: block;
         }
 
         canvas {
@@ -120,7 +151,7 @@
             font-size: 0.9rem;
         }
 
-        /* Mobile Controls */
+        /* Mobile Controls for Car */
         .mobile-controls {
             display: none;
             gap: 20px;
@@ -169,21 +200,35 @@
         <a href="index.html" class="back-btn">← Back to Home</a>
     </header>
 
-    <div class="game-container">
+    <!-- Game Selection Tabs -->
+    <div class="game-tabs">
+        <button class="tab-btn active" onclick="switchGame('carGame')">🏎️ Cyber Car Race</button>
+        <button class="tab-btn" onclick="switchGame('snakeGame')">🐍 Neon Snake</button>
+    </div>
+
+    <!-- CAR GAME SECTION -->
+    <div class="game-section active" id="carGame">
         <div class="game-ui">
             <span id="scoreDisplay">SCORE: 0</span>
             <span id="levelDisplay">LEVEL: 1</span>
             <span id="livesDisplay">LIVES: ❤️❤️❤️</span>
         </div>
-        
         <canvas id="gameCanvas" width="400" height="600"></canvas>
-        
-        <div class="controls-hint">Use Left/Right Arrow Keys or A/D to steer your Cyber Car! Avoid incoming Traffic.</div>
-
+        <div class="controls-hint">Use Left/Right Arrow Keys or A/D to steer your Cyber Car!</div>
         <div class="mobile-controls">
             <button class="control-btn" id="leftBtn">◀</button>
             <button class="control-btn" id="rightBtn">▶</button>
         </div>
+    </div>
+
+    <!-- SNAKE GAME SECTION -->
+    <div class="game-section" id="snakeGame">
+        <div class="game-ui" style="width: 400px;">
+            <span id="snakeScore">SCORE: 0</span>
+            <span id="highScore">HIGH: 0</span>
+        </div>
+        <canvas id="snakeCanvas" width="400" height="400"></canvas>
+        <div class="controls-hint">Use Arrow Keys to control the Snake!</div>
     </div>
 
     <footer>
@@ -191,236 +236,195 @@
     </footer>
 
     <script>
+        // Tab Switcher Logic
+        function switchGame(gameId) {
+            document.querySelectorAll('.game-section').forEach(sec => sec.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            
+            document.getElementById(gameId).classList.add('active');
+            event.target.classList.add('active');
+        }
+
+        // --- CYBER CAR GAME SCRIPT ---
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
-
         const scoreDisplay = document.getElementById('scoreDisplay');
         const levelDisplay = document.getElementById('levelDisplay');
         const livesDisplay = document.getElementById('livesDisplay');
 
-        let score = 0;
-        let level = 1;
-        let lives = 3;
-        let gameOver = false;
-        let gameSpeed = 4;
-        let roadLineOffset = 0;
+        let score = 0, level = 1, lives = 3, gameOver = false, gameSpeed = 4, roadLineOffset = 0;
+        const player = { x: 175, y: 480, width: 50, height: 90, speed: 6, color: '#00f0ff' };
+        let trafficCars = [], keys = {};
 
-        // Player Car
-        const player = {
-            x: 175,
-            y: 480,
-            width: 50,
-            height: 90,
-            speed: 6,
-            color: '#00f0ff'
-        };
-
-        let trafficCars = [];
-        let keys = {};
-
-        // Keyboard Event Listeners
         window.addEventListener('keydown', (e) => { keys[e.key] = true; });
         window.addEventListener('keyup', (e) => { keys[e.key] = false; });
 
-        // Mobile Controls Listeners
         const leftBtn = document.getElementById('leftBtn');
         const rightBtn = document.getElementById('rightBtn');
+        if(leftBtn && rightBtn) {
+            leftBtn.addEventListener('touchstart', (e) => { e.preventDefault(); keys['ArrowLeft'] = true; });
+            leftBtn.addEventListener('touchend', (e) => { e.preventDefault(); keys['ArrowLeft'] = false; });
+            rightBtn.addEventListener('touchstart', (e) => { e.preventDefault(); keys['ArrowRight'] = true; });
+            rightBtn.addEventListener('touchend', (e) => { e.preventDefault(); keys['ArrowRight'] = false; });
+        }
 
-        leftBtn.addEventListener('touchstart', (e) => { e.preventDefault(); keys['ArrowLeft'] = true; });
-        leftBtn.addEventListener('touchend', (e) => { e.preventDefault(); keys['ArrowLeft'] = false; });
-        rightBtn.addEventListener('touchstart', (e) => { e.preventDefault(); keys['ArrowRight'] = true; });
-        rightBtn.addEventListener('touchend', (e) => { e.preventDefault(); keys['ArrowRight'] = false; });
-
-        // Spawn Traffic Cars
         function spawnTraffic() {
             if (Math.random() < 0.02 + (level * 0.005)) {
                 const lanes = [40, 130, 220, 310];
                 const laneX = lanes[Math.floor(Math.random() * lanes.length)];
-                trafficCars.push({
-                    x: laneX,
-                    y: -100,
-                    width: 50,
-                    height: 90,
-                    speed: gameSpeed + Math.random() * 2,
-                    color: '#ff0055'
-                });
+                trafficCars.push({ x: laneX, y: -100, width: 50, height: 90, speed: gameSpeed + Math.random() * 2, color: '#ff0055' });
             }
         }
 
-        // Draw Cyber Car
         function drawCar(x, y, width, height, color, isPlayer = false) {
             ctx.save();
             ctx.shadowBlur = 15;
             ctx.shadowColor = color;
             ctx.fillStyle = color;
-
-            // Car Body
             ctx.beginPath();
             ctx.roundRect(x, y, width, height, 10);
             ctx.fill();
-
-            // Windshield
             ctx.fillStyle = '#070a0f';
             ctx.fillRect(x + 8, y + 20, width - 16, 20);
-
-            // Headlights
-            ctx.fillStyle = isPlayer ? '#ffffff' : '#ffff00';
-            ctx.fillRect(x + 5, y + 2, 8, 4);
-            ctx.fillRect(x + width - 13, y + 2, 8, 4);
-
-            // Taillights
-            ctx.fillStyle = '#ff0000';
-            ctx.fillRect(x + 5, y + height - 6, 8, 4);
-            ctx.fillRect(x + width - 13, y + height - 6, 8, 4);
-
             ctx.restore();
         }
 
-        // Draw Road & Moving Lines
-        function drawRoad() {
-            ctx.fillStyle = '#1e293b';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
+        function carLoop() {
+            if (!gameOver && document.getElementById('carGame').classList.contains('active')) {
+                roadLineOffset += gameSpeed;
+                if ((keys['ArrowLeft'] || keys['a'] || keys['A']) && player.x > 25) player.x -= player.speed;
+                if ((keys['ArrowRight'] || keys['d'] || keys['D']) && player.x < canvas.width - player.width - 25) player.x += player.speed;
 
-            // Road borders
-            ctx.strokeStyle = '#00f0ff';
-            ctx.lineWidth = 4;
-            ctx.beginPath();
-            ctx.moveTo(15, 0); ctx.lineTo(15, canvas.height);
-            ctx.moveTo(canvas.width - 15, 0); ctx.lineTo(canvas.width - 15, canvas.height);
-            ctx.stroke();
-
-            // Center Dashed Lanes
-            ctx.strokeStyle = '#ffffff';
-            ctx.lineWidth = 4;
-            ctx.setLineDash([20, 20]);
-            ctx.lineDashOffset = -roadLineOffset;
-
-            ctx.beginPath();
-            ctx.moveTo(133, 0); ctx.lineTo(133, canvas.height);
-            ctx.moveTo(266, 0); ctx.lineTo(266, canvas.height);
-            ctx.stroke();
-            ctx.setLineDash([]); // Reset
-        }
-
-        // Collision Detection
-        function checkCollision(rect1, rect2) {
-            return rect1.x < rect2.x + rect2.width &&
-                   rect1.x + rect1.width > rect2.x &&
-                   rect1.y < rect2.y + rect2.height &&
-                   rect1.y + rect1.height > rect2.y;
-        }
-
-        // Game Loop Update
-        function update() {
-            if (gameOver) return;
-
-            // Move Road
-            roadLineOffset += gameSpeed;
-
-            // Player Movement
-            if ((keys['ArrowLeft'] || keys['a'] || keys['A']) && player.x > 25) {
-                player.x -= player.speed;
-            }
-            if ((keys['ArrowRight'] || keys['d'] || keys['D']) && player.x < canvas.width - player.width - 25) {
-                player.x += player.speed;
-            }
-
-            // Spawn and move traffic
-            spawnTraffic();
-            for (let i = trafficCars.length - 1; i >= 0; i--) {
-                trafficCars[i].y += trafficCars[i].speed;
-
-                // Check Collision with Player
-                if (checkCollision(player, trafficCars[i])) {
-                    lives--;
-                    trafficCars.splice(i, 1);
-                    updateLivesUI();
-
-                    if (lives <= 0) {
-                        gameOver = true;
+                spawnTraffic();
+                for (let i = trafficCars.length - 1; i >= 0; i--) {
+                    trafficCars[i].y += trafficCars[i].speed;
+                    if (player.x < trafficCars[i].x + trafficCars[i].width && player.x + player.width > trafficCars[i].x &&
+                        player.y < trafficCars[i].y + trafficCars[i].height && player.y + player.height > trafficCars[i].y) {
+                        lives--;
+                        trafficCars.splice(i, 1);
+                        let hearts = ""; for (let j = 0; j < lives; j++) hearts += "❤️";
+                        livesDisplay.innerText = "LIVES: " + hearts;
+                        if (lives <= 0) gameOver = true;
+                        continue;
                     }
-                    continue;
-                }
-
-                // Remove off-screen cars & add score
-                if (trafficCars[i].y > canvas.height) {
-                    trafficCars.splice(i, 1);
-                    score += 10;
-                    scoreDisplay.innerText = "SCORE: " + score;
-
-                    // Level Progression
-                    if (score % 100 === 0) {
-                        level++;
-                        gameSpeed += 1;
-                        levelDisplay.innerText = "LEVEL: " + level;
+                    if (trafficCars[i].y > canvas.height) {
+                        trafficCars.splice(i, 1);
+                        score += 10;
+                        scoreDisplay.innerText = "SCORE: " + score;
+                        if (score % 100 === 0) { level++; gameSpeed += 1; levelDisplay.innerText = "LEVEL: " + level; }
                     }
                 }
-            }
-        }
 
-        function updateLivesUI() {
-            let hearts = "";
-            for (let i = 0; i < lives; i++) hearts += "❤️";
-            livesDisplay.innerText = "LIVES: " + hearts;
-        }
-
-        // Render Everything
-        function draw() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-            drawRoad();
-
-            // Draw Traffic Cars
-            trafficCars.forEach(car => {
-                drawCar(car.x, car.y, car.width, car.height, car.color, false);
-            });
-
-            // Draw Player Car
-            drawCar(player.x, player.y, player.width, player.height, player.color, true);
-
-            // Game Over Screen
-            if (gameOver) {
-                ctx.fillStyle = 'rgba(7, 10, 15, 0.85)';
+                ctx.fillStyle = '#1e293b';
                 ctx.fillRect(0, 0, canvas.width, canvas.height);
+                trafficCars.forEach(car => drawCar(car.x, car.y, car.width, car.height, car.color, false));
+                drawCar(player.x, player.y, player.width, player.height, player.color, true);
 
-                ctx.fillStyle = '#ff0055';
-                ctx.font = 'bold 36px Rajdhani';
-                ctx.textAlign = 'center';
-                ctx.fillText('GAME OVER', canvas.width / 2, canvas.height / 2 - 30);
-
-                ctx.fillStyle = '#f8fafc';
-                ctx.font = '20px Outfit';
-                ctx.fillText('Final Score: ' + score, canvas.width / 2, canvas.height / 2 + 10);
-
-                ctx.fillStyle = '#00f0ff';
-                ctx.font = '16px Outfit';
-                ctx.fillText('Click / Tap Here to Restart', canvas.width / 2, canvas.height / 2 + 55);
+                if (gameOver) {
+                    ctx.fillStyle = 'rgba(7, 10, 15, 0.85)';
+                    ctx.fillRect(0, 0, canvas.width, canvas.height);
+                    ctx.fillStyle = '#ff0055'; ctx.font = 'bold 36px Rajdhani'; ctx.textAlign = 'center';
+                    ctx.fillText('GAME OVER', canvas.width / 2, canvas.height / 2 - 20);
+                    ctx.fillStyle = '#00f0ff'; ctx.font = '16px Outfit';
+                    ctx.fillText('Click to Restart', canvas.width / 2, canvas.height / 2 + 20);
+                }
             }
+            requestAnimationFrame(carLoop);
         }
 
-        // Main Loop
-        function loop() {
-            update();
-            draw();
-            requestAnimationFrame(loop);
-        }
-
-        // Restart on Click after Game Over
         canvas.addEventListener('click', () => {
-            if (gameOver) {
-                score = 0;
-                level = 1;
-                lives = 3;
-                gameSpeed = 4;
-                trafficCars = [];
-                gameOver = false;
-                scoreDisplay.innerText = "SCORE: 0";
-                levelDisplay.innerText = "LEVEL: 1";
-                updateLivesUI();
-            }
+            if (gameOver) { score = 0; level = 1; lives = 3; gameSpeed = 4; trafficCars = []; gameOver = false; scoreDisplay.innerText = "SCORE: 0"; levelDisplay.innerText = "LEVEL: 1"; livesDisplay.innerText = "LIVES: ❤️❤️❤️"; }
+        });
+        carLoop();
+
+
+        // --- NEON SNAKE GAME SCRIPT ---
+        const snakeCanvas = document.getElementById('snakeCanvas');
+        const sCtx = snakeCanvas.getContext('2d');
+        const snakeScoreEl = document.getElementById('snakeScore');
+        const highScoreEl = document.getElementById('highScore');
+
+        let snake = [{x: 160, y: 160}], dx = 20, dy = 0, foodX = 0, foodY = 0, snakeScore = 0, highScore = 0, snakeGameOver = false;
+
+        function createFood() {
+            foodX = Math.floor(Math.random() * (snakeCanvas.width / 20)) * 20;
+            foodY = Math.floor(Math.random() * (snakeCanvas.height / 20)) * 20;
+        }
+        createFood();
+
+        window.addEventListener('keydown', e => {
+            if (!document.getElementById('snakeGame').classList.contains('active')) return;
+            if (e.key === 'ArrowLeft' && dx === 0) { dx = -20; dy = 0; }
+            if (e.key === 'ArrowUp' && dy === 0) { dx = 0; dy = -20; }
+            if (e.key === 'ArrowRight' && dx === 0) { dx = 20; dy = 0; }
+            if (e.key === 'ArrowDown' && dy === 0) { dx = 0; dy = 20; }
         });
 
-        loop();
+        function snakeMain() {
+            if (document.getElementById('snakeGame').classList.contains('active')) {
+                if (snakeGameOver) {
+                    sCtx.fillStyle = 'rgba(7, 10, 15, 0.9)';
+                    sCtx.fillRect(0, 0, snakeCanvas.width, snakeCanvas.height);
+                    sCtx.fillStyle = '#ff0055'; sCtx.font = 'bold 30px Rajdhani'; sCtx.textAlign = 'center';
+                    sCtx.fillText('SNAKE GAME OVER', snakeCanvas.width / 2, snakeCanvas.height / 2 - 15);
+                    sCtx.fillStyle = '#00f0ff'; sCtx.font = '16px Outfit';
+                    sCtx.fillText('Press Enter or Click to Restart', snakeCanvas.width / 2, snakeCanvas.height / 2 + 25);
+                    return;
+                }
+
+                setTimeout(() => {
+                    sCtx.fillStyle = '#1e293b';
+                    sCtx.fillRect(0, 0, snakeCanvas.width, snakeCanvas.height);
+
+                    // Draw Food
+                    sCtx.fillStyle = '#ff0055';
+                    sCtx.shadowBlur = 10; sCtx.shadowColor = '#ff0055';
+                    sCtx.fillRect(foodX, foodY, 18, 18);
+
+                    // Move Snake
+                    const head = {x: snake[0].x + dx, y: snake[0].y + dy};
+                    
+                    // Wall collision
+                    if (head.x < 0 || head.x >= snakeCanvas.width || head.y < 0 || head.y >= snakeCanvas.height || snake.some(part => part.x === head.x && part.y === head.y)) {
+                        snakeGameOver = true;
+                        return;
+                    }
+
+                    snake.unshift(head);
+                    if (head.x === foodX && head.y === foodY) {
+                        snakeScore += 10;
+                        snakeScoreEl.innerText = "SCORE: " + snakeScore;
+                        if (snakeScore > highScore) { highScore = snakeScore; highScoreEl.innerText = "HIGH: " + highScore; }
+                        createFood();
+                    } else {
+                        snake.pop();
+                    }
+
+                    // Draw Snake
+                    snake.forEach((part, index) => {
+                        sCtx.fillStyle = index === 0 ? '#00f0ff' : '#00a8ff';
+                        sCtx.shadowBlur = 8; sCtx.shadowColor = '#00f0ff';
+                        sCtx.fillRect(part.x, part.y, 18, 18);
+                    });
+
+                    snakeMain();
+                }, 100);
+            } else {
+                setTimeout(snakeMain, 200);
+            }
+        }
+
+        snakeCanvas.addEventListener('click', () => {
+            if (snakeGameOver) {
+                snake = [{x: 160, y: 160}];
+                dx = 20; dy = 0; snakeScore = 0;
+                snakeScoreEl.innerText = "SCORE: 0";
+                snakeGameOver = false;
+                createFood();
+                snakeMain();
+            }
+        });
+        snakeMain();
     </script>
 </body>
 </html>
