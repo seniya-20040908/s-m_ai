@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>About Us - Seni & Mahe AI Creations</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Rajdhani:wght@500;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #070a0f;
+            --card-bg: #0f172a;
+            --accent-cyan: #00f0ff;
+            --accent-purple: #7000ff;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --border-color: rgba(0, 240, 255, 0.2);
+        }
+
+        [data-theme="light"] {
+            --bg-color: #f1f5f9;
+            --card-bg: #ffffff;
+            --accent-cyan: #0284c7;
+            --accent-purple: #7c3aed;
+            --text-main: #0f172a;
+            --text-muted: #475569;
+            --border-color: rgba(2, 132, 199, 0.2);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Outfit', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            line-height: 1.6;
+            overflow-x: hidden;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        .glow-bg {
+            position: absolute;
+            top: -100px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(circle, rgba(0, 240, 255, 0.15) 0%, rgba(112, 0, 255, 0.1) 40%, rgba(7, 10, 15, 0) 70%);
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 2rem 5%;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .brand-container {
+            display: flex;
+            align-items: center;
+            gap: 1.2rem;
+            text-decoration: none;
+        }
+
+        .brand-logo {
+            width: 60px; 
+            height: 60px;
+            object-fit: cover;
+            border-radius: 14px;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 0 20px rgba(0, 240, 255, 0.4);
+        }
+
+        .brand-name {
+            font-size: 2.2rem;
+            font-weight: 800;
+            letter-spacing: 1px;
+            color: var(--text-main);
+            font-family: 'Rajdhani', sans-serif;
+            text-transform: uppercase;
+            line-height: 1;
+        }
+
+        .brand-name span {
+            color: var(--accent-cyan);
+            text-shadow: 0 0 20px rgba(0, 240, 255, 0.8);
+        }
+
+        .theme-toggle {
+            background: transparent;
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+            padding: 0.5rem 0.8rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .theme-toggle:hover {
+            border-color: var(--accent-cyan);
+            color: var(--accent-cyan);
+        }
+
+        .content-container {
+            max-width: 900px;
+            margin: 2rem auto 4rem auto;
+            padding: 3rem;
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            box-shadow: 0 0 30px rgba(0, 240, 255, 0.08);
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 1.5rem;
+            color: var(--accent-cyan);
+            text-transform: uppercase;
+        }
+
+        h2 {
+            font-size: 1.5rem;
+            margin-top: 2rem;
+            margin-bottom: 0.8rem;
+            color: var(--text-main);
+        }
+
+        p {
+            color: var(--text-muted);
+            margin-bottom: 1.2rem;
+            font-size: 1rem;
+        }
+
+        .back-home {
+            display: inline-block;
+            margin-bottom: 1.5rem;
+            color: var(--accent-cyan);
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .back-home:hover {
+            text-decoration: underline;
+        }
+
+        footer {
+            text-align: center;
+            padding: 2rem;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            border-top: 1px solid var(--border-color);
+            margin-top: 4rem;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="glow-bg"></div>
+
+    <header>
+        <a href="index.html" class="brand-container">
+            <img src="https://lh3.googleusercontent.com/d/1nJmw3Fc1yR7L3eH8epvcRI_w5bgAEiAC=s1000" alt="Seni & Mahe AI" class="brand-logo">
+            <div class="brand-name">Seni & Mahe <span>AI</span></div>
+        </a>
+        <button class="theme-toggle" onclick="toggleTheme()" id="themeBtn">☀️ / 🌙</button>
+    </header>
+
+    <div class="content-container">
+        <a href="index.html" class="back-home">&larr; Back to Home</a>
+        <h1>About Us</h1>
+        
+        <p>Welcome to <strong>Seni & Mahe AI Creations</strong>, where cutting-edge artificial intelligence meets creative digital storytelling. We specialize in producing high-quality AI-generated videos, digital content, and custom multimedia solutions tailored to bring your imagination to life.</p>
+
+        <h2>Who We Are</h2>
+        <p>We are a passionate team dedicated to exploring the limitless possibilities of AI technology in design, video production, and content creation. Our goal is to bridge the gap between futuristic technology and stunning visual art, delivering unique experiences to our clients and audience.</p>
+
+        <h2>What We Do</h2>
+        <p>From dynamic AI video clips to specialized digital concepts, we push the boundaries of modern media production. We constantly innovate to ensure our creations stand out with unmatched quality, style, and professional execution.</p>
+
+        <h2>Our Mission</h2>
+        <p>To empower creators, brands, and digital enthusiasts by providing top-tier AI-powered video creations and establishing a reliable platform for futuristic digital media.</p>
+    </div>
+
+    <footer>
+        &copy; 2026 Seni & Mahe AI Creations. All rights reserved.
+    </footer>
+
+    <script>
+        function toggleTheme() {
+            const html = document.documentElement;
+            if (html.getAttribute('data-theme') === 'dark') {
+                html.setAttribute('data-theme', 'light');
+            } else {
+                html.setAttribute('data-theme', 'dark');
+            }
+        }
+    </script>
+</body>
+</html>
