@@ -944,7 +944,8 @@
 
         const reviewForm = document.getElementById('reviewForm');
         reviewForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
+            e.preventDefault(); // මෙය නිසා FormSubmit හෝ වෙනත් පේජ් එකකට රීඩිරෙක්ට් වීම සම්පූර්ණයෙන්ම වැළකේ.
+            
             const name = document.getElementById('reviewerName').value;
             const ratingVal = parseInt(document.getElementById('reviewRating').value);
             const text = document.getElementById('reviewText').value;
