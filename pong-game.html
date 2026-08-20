@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cyber AI Pong - Seni & Mahe AI</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800&family=Rajdhani:wght@600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #070a0f;
+            --card-bg: #0f172a;
+            --accent-cyan: #00f0ff;
+            --accent-pink: #ff007f;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --border-color: rgba(0, 240, 255, 0.2);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Outfit', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .game-wrapper {
+            width: 100%;
+            max-width: 620px;
+            text-align: center;
+            background: var(--card-bg);
+            border: 2px solid var(--border-color);
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: 0 0 35px rgba(0, 240, 255, 0.15);
+        }
+
+        h1 {
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 2rem;
+            margin-bottom: 5px;
+            color: var(--accent-cyan);
+            text-shadow: 0 0 10px rgba(0, 240, 255, 0.4);
+        }
+
+        .subtitle {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            margin-bottom: 15px;
+        }
+
+        canvas {
+            background: #020408;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            display: block;
+            margin: 0 auto;
+            box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.9);
+        }
+
+        .ui-panel {
+            display: flex;
+            justify-content: space-around;
+            width: 100%;
+            max-width: 550px;
+            margin: 12px auto;
+            font-size: 1.2rem;
+            font-weight: 700;
+        }
+
+        .btn {
+            background: var(--accent-cyan);
+            color: #000;
+            border: none;
+            padding: 10px 25px;
+            font-weight: 700;
+            border-radius: 6px;
+            cursor: pointer;
+            margin-top: 12px;
+            transition: 0.3s;
+            text-transform: uppercase;
+        }
+
+        .btn:hover {
+            box-shadow: 0 0 15px var(--accent-cyan);
+            transform: scale(1.05);
+        }
+
+        .nav-links {
+            margin-top: 15px;
+        }
+
+        .back-link {
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: 0.2s;
+        }
+
+        .back-link:hover {
+            color: var(--accent-cyan);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="game-wrapper">
+        <h1>CYBER AI PONG</h1>
+        <div class="subtitle">Use Up/Down Arrow keys or W/S to control your paddle!</div>
+        
+        <div class="ui-panel">
+            <div>Player: <span id="playerScore" style="color: var(--accent-cyan);">0</span></div>
+            <div>AI Bot: <span id="aiScore" style="color: var(--accent-pink);">0</span></div>
+        </div>
+
+        <canvas id="gameCanvas" width="550" height="400"></canvas>
+        
+        <button class="btn" id="startBtn" onclick="startGame()">Start Match</button>
+        
+        <div class="nav-links">
+            <a href="games.html" class="back-link">← Back to Main Games</a>
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById("gameCanvas");
+        const ctx = canvas.getContext("2d");
+
+        let isPlaying = false;
+        let pScore = 0;
+        let aScore = 0;
+
+        // Ball object
+        let ball = {
+            x: canvas.width / 2,
+            y: canvas.height / 2,
+            radius: 8,
+            speed: 4,
+            velocityX: 4,
+            velocityY: 4
+        };
+
+        // Player Paddle
+        let player = {
+            x: 10,
+            y: canvas.height / 2 - 40,
+            width: 12,
+            height: 80,
+            score: 0,
+            speed: 8
+        };
+
+        // AI Paddle
+        let ai = {
+            x: canvas.width - 22,
+            y: canvas.height / 2 - 40,
+            width: 12,
+            height: 80,
+            score: 0,
+            speed: 4.5
+        };
+
+        let keys = {};
+
+        window.addEventListener("keydown", (e) => {
+            keys[e.code] = true;
+        });
+
+        window.addEventListener("keyup", (e) => {
+            keys[e.code] = false;
+        });
+
+        function startGame() {
+            pScore = 0;
+            aScore = 0;
+            resetBall();
+            isPlaying = true;
+            document.getElementById("startBtn").style.display = "none";
+            loop();
+        }
+
+        function resetBall() {
+            ball.x = canvas.width / 2;
+            ball.y = canvas.height / 2;
+            ball.velocityX = -ball.velocityX;
+            ball.speed = 4;
+        }
+
+        function update() {
+            if (!isPlaying) return;
+
+            // Player movement
+            if ((keys["ArrowUp"] || keys["KeyW"]) && player.y > 0) {
+                player.y -= player.speed;
+            }
+            if ((keys["ArrowDown"] || keys["KeyS"]) && player.y + player.height < canvas.height) {
+                player.y += player.speed;
+            }
+
+            // Simple AI movement
+            let aiCenter = ai.y + ai.height / 2;
+            if (aiCenter < ball.y - 35) {
+                ai.y += ai.speed;
+            } else if (aiCenter > ball.y + 35) {
+                ai.y -= ai.speed;
+            }
+            // Keep AI inside canvas
+            if (ai.y < 0) ai.y = 0;
+            if (ai.y + ai.height > canvas.height) ai.y = canvas.height - ai.height;
+
+            // Move ball
+            ball.x += ball.velocityX;
+            ball.y += ball.velocityY;
+
+            // Wall collision (Top & Bottom)
+            if (ball.y - ball.radius < 0 || ball.y + ball.radius > canvas.height) {
+                ball.velocityY = -ball.velocityY;
+            }
+
+            // Determine which paddle to check collision with
+            let activePaddle = (ball.x < canvas.width / 2) ? player : ai;
+
+            if (
+                ball.x - ball.radius < activePaddle.x + activePaddle.width &&
+                ball.x + ball.radius > activePaddle.x &&
+                ball.y > activePaddle.y &&
+                ball.y < activePaddle.y + activePaddle.height
+            ) {
+                // Calculate hit point to change bounce angle
+                let collidePoint = ball.y - (activePaddle.y + activePaddle.height / 2);
+                collidePoint = collidePoint / (activePaddle.height / 2);
+                
+                let angleRad = (Math.PI / 4) * collidePoint;
+                let direction = (ball.x < canvas.width / 2) ? 1 : -1;
+
+                ball.velocityX = direction * ball.speed * Math.cos(angleRad);
+                ball.velocityY = ball.speed * Math.sin(angleRad);
+                
+                // Increase speed slightly with each hit
+                ball.speed += 0.2;
+            }
+
+            // Score points
+            if (ball.x - ball.radius < 0) {
+                aScore++;
+                document.getElementById("aiScore").innerText = aScore;
+                resetBall();
+            } else if (ball.x + ball.radius > canvas.width) {
+                pScore++;
+                document.getElementById("playerScore").innerText = pScore;
+                resetBall();
+            }
+        }
+
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Draw Net line
+            ctx.strokeStyle = "rgba(255, 255, 255, 0.1)";
+            ctx.lineWidth = 2;
+            ctx.setLineDash([5, 5]);
+            ctx.beginPath();
+            ctx.moveTo(canvas.width / 2, 0);
+            ctx.lineTo(canvas.width / 2, canvas.height);
+            ctx.stroke();
+            ctx.setLineDash([]);
+
+            // Draw Player Paddle
+            ctx.fillStyle = "#00f0ff";
+            ctx.shadowBlur = 10;
+            ctx.shadowColor = "#00f0ff";
+            ctx.fillRect(player.x, player.y, player.width, player.height);
+
+            // Draw AI Paddle
+            ctx.fillStyle = "#ff007f";
+            ctx.shadowColor = "#ff007f";
+            ctx.fillRect(ai.x, ai.y, ai.width, ai.height);
+
+            // Draw Ball
+            ctx.fillStyle = "#fff";
+            ctx.shadowColor = "#fff";
+            ctx.beginPath();
+            ctx.arc(ball.x, ball.y, ball.radius, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.shadowBlur = 0; // Reset shadow
+        }
+
+        function loop() {
+            update();
+            draw();
+            if (isPlaying) {
+                requestAnimationFrame(loop);
+            }
+        }
+    </script>
+</body>
+</html>
