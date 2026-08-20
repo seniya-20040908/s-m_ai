@@ -217,6 +217,49 @@
             margin: 0 auto;
         }
 
+        /* Play & Win Special Button Style */
+        .play-win-container {
+            margin: 1.5rem 0 2rem 0;
+            display: flex;
+            justify-content: center;
+        }
+
+        .play-win-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+            padding: 0.8rem 2.2rem;
+            background: linear-gradient(135deg, #ffbb00 0%, #ff5500 50%, #00f0ff 100%);
+            background-size: 200% auto;
+            color: #fff;
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 1.4rem;
+            font-weight: 800;
+            text-decoration: none;
+            border-radius: 50px;
+            box-shadow: 0 0 25px rgba(0, 240, 255, 0.5), 0 0 15px rgba(255, 187, 0, 0.5);
+            transition: all 0.4s ease;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            border: 2px solid rgba(255, 255, 255, 0.4);
+            animation: pulseGlow 2s infinite alternate;
+        }
+
+        .play-win-btn:hover {
+            transform: scale(1.08) translateY(-3px);
+            box-shadow: 0 0 40px rgba(0, 240, 255, 0.8), 0 0 25px rgba(255, 187, 0, 0.8);
+            background-position: right center;
+        }
+
+        @keyframes pulseGlow {
+            0% {
+                box-shadow: 0 0 15px rgba(0, 240, 255, 0.4), 0 0 10px rgba(255, 187, 0, 0.4);
+            }
+            100% {
+                box-shadow: 0 0 30px rgba(0, 240, 255, 0.8), 0 0 20px rgba(255, 187, 0, 0.8);
+            }
+        }
+
         .dynamic-prop-container {
             min-height: 40px;
             display: flex;
@@ -682,7 +725,7 @@
                 <a onclick="showSection('calculator')">Calculator</a>
                 <a onclick="showSection('tools')">Tech Stack</a>
                 <a href="blog.html">Blog</a>
-                <a href="games.html">AI Games</a> <!-- මෙන්න මෙතැනට AI Games එකතු කර ඇත -->
+                <a href="games.html">AI Games</a>
                 <a onclick="showSection('faq')">FAQ</a>
                 <a onclick="showSection('reviews')">Reviews</a>
                 <a onclick="showSection('contact')">Contact</a>
@@ -700,6 +743,13 @@
     <!-- HOME SECTION -->
     <section class="page-section active" id="home">
         <div class="hero">
+            <!-- PLAY & WIN BUTTON HERE -->
+            <div class="play-win-container">
+                <a href="games.html" class="play-win-btn">
+                    <span>▶</span> PLAY & WIN
+                </a>
+            </div>
+
             <div class="dynamic-prop-container">
                 <div class="dynamic-prop" id="dynamicProp">Transform Your Script into Cinematic Shorts</div>
             </div>
