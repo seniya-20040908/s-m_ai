@@ -1,18 +1,20 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Neon Space Shooter - Seni & Mahe AI Games</title>
+    <title>Space Shooter AI - Seni & Mahe AI</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Rajdhani:wght@500;700;800&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg-color: #050811;
+            --bg-color: #070a0f;
+            --card-bg: #0f172a;
             --accent-cyan: #00f0ff;
-            --accent-purple: #7000ff;
-            --accent-pink: #ff0055;
             --text-main: #f8fafc;
-            --border-color: rgba(0, 240, 255, 0.3);
+            --text-muted: #94a3b8;
+            --border-color: rgba(0, 240, 255, 0.2);
         }
 
         * {
@@ -20,399 +22,347 @@
             padding: 0;
             box-sizing: border-box;
             font-family: 'Outfit', sans-serif;
-            user-select: none;
         }
 
         body {
             background-color: var(--bg-color);
             color: var(--text-main);
-            overflow: hidden;
-            height: 100vh;
+            min-height: 100vh;
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: space-between;
-        }
-
-        /* Top HUD */
-        .hud {
-            width: 100%;
-            max-width: 1200px;
-            padding: 15px 30px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            background: rgba(15, 23, 42, 0.8);
-            border-bottom: 2px solid var(--border-color);
-            border-radius: 0 0 16px 16px;
-            font-family: 'Rajdhani', sans-serif;
-            font-size: 1.4rem;
-            font-weight: 700;
-            z-index: 10;
-            backdrop-filter: blur(10px);
-        }
-
-        .hud span {
-            color: var(--accent-cyan);
-            text-shadow: 0 0 10px rgba(0, 240, 255, 0.6);
-        }
-
-        .back-btn {
-            color: var(--accent-cyan);
-            text-decoration: none;
-            font-size: 1rem;
-            border: 1px solid var(--border-color);
-            padding: 6px 15px;
-            border-radius: 8px;
-            transition: 0.3s;
-        }
-
-        .back-btn:hover {
-            background: var(--accent-cyan);
-            color: #000;
-            box-shadow: 0 0 15px var(--accent-cyan);
-        }
-
-        /* Canvas Fullscreen Container */
-        .game-container {
-            flex: 1;
-            width: 100%;
-            display: flex;
             justify-content: center;
-            align-items: center;
+            overflow: hidden;
+        }
+
+        .game-container {
+            text-align: center;
+            background: var(--card-bg);
+            border: 2px solid var(--border-color);
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: 0 0 30px rgba(0, 240, 255, 0.2);
             position: relative;
         }
 
-        canvas {
-            background: radial-gradient(circle at center, #0a1128 0%, #030712 100%);
-            box-shadow: 0 0 40px rgba(0, 240, 255, 0.15);
-            display: block;
-        }
-
-        /* Controls Help for Mobile/Touch */
-        .mobile-controls {
-            display: none;
-            width: 100%;
-            padding: 15px;
-            background: rgba(15, 23, 42, 0.9);
-            justify-content: space-around;
-            z-index: 10;
-        }
-
-        .ctrl-btn {
-            background: transparent;
-            border: 2px solid var(--accent-cyan);
-            color: var(--text-main);
-            padding: 12px 25px;
-            font-size: 1.2rem;
+        h1 {
             font-family: 'Rajdhani', sans-serif;
-            font-weight: 700;
-            border-radius: 12px;
-            cursor: pointer;
-            box-shadow: 0 0 10px rgba(0, 240, 255, 0.3);
+            font-size: 2rem;
+            margin-bottom: 10px;
+            color: var(--accent-cyan);
+            text-shadow: 0 0 10px rgba(0, 240, 255, 0.5);
         }
 
-        .ctrl-btn:active {
+        canvas {
+            background: #020408;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            display: block;
+            margin: 0 auto;
+            box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.8);
+        }
+
+        .ui-panel {
+            display: flex;
+            justify-content: space-between;
+            width: 480px;
+            margin: 10px auto;
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+
+        .btn {
             background: var(--accent-cyan);
             color: #000;
+            border: none;
+            padding: 10px 20px;
+            font-weight: 700;
+            border-radius: 6px;
+            cursor: pointer;
+            margin-top: 10px;
+            transition: 0.3s;
         }
 
-        @media (max-width: 768px) {
-            .mobile-controls {
-                display: flex;
-            }
+        .btn:hover {
+            box-shadow: 0 0 15px var(--accent-cyan);
+            transform: scale(1.05);
+        }
+
+        .back-link {
+            margin-top: 15px;
+            display: inline-block;
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 0.9rem;
+        }
+
+        .back-link:hover {
+            color: var(--accent-cyan);
         }
     </style>
 </head>
 <body>
 
-    <div class="hud">
-        <a href="games.html" class="back-btn">← Games Hub</a>
-        <div>SCORE: <span id="scoreVal">0</span></div>
-        <div>SHIELD: <span id="shieldVal" style="color: #00ff88;">100</span>%</div>
-        <div>WAVE: <span id="waveVal">1</span></div>
-    </div>
-
     <div class="game-container">
-        <canvas id="gameCanvas"></canvas>
-    </div>
+        <h1>SPACE SHOOTER <span style="font-size: 1rem; color: #fff;">(Shield & Power-Up Edition)</span></h1>
+        
+        <div class="ui-panel">
+            <div>Score: <span id="scoreVal" style="color: var(--accent-cyan);">0</span></div>
+            <div>Shield: <span id="shieldVal" style="color: #00ff80;">OFF</span></div>
+            <div>Lives: <span id="livesVal" style="color: #ff4d4d;">3</span></div>
+        </div>
 
-    <div class="mobile-controls">
-        <button class="ctrl-btn" ontouchstart="moveLeft()" onmousedown="moveLeft()">◀ LEFT</button>
-        <button class="ctrl-btn" ontouchstart="shootLaser()" onmousedown="shootLaser()" style="border-color: var(--accent-pink); color: var(--accent-pink);">🔥 FIRE</button>
-        <button class="ctrl-btn" ontouchstart="moveRight()" onmousedown="moveRight()">RIGHT ▶</button>
+        <canvas id="gameCanvas" width="480" height="600"></canvas>
+        
+        <button class="btn" id="startBtn" onclick="startGame()">Start Game</button>
+        <br>
+        <a href="games.html" class="back-link">← Back to AI Games</a>
     </div>
 
     <script>
         const canvas = document.getElementById("gameCanvas");
         const ctx = canvas.getContext("2d");
 
-        // Fullscreen dynamic resize
-        function resizeCanvas() {
-            canvas.width = window.innerWidth > 900 ? 850 : window.innerWidth * 0.95;
-            canvas.height = window.innerHeight * 0.72;
-        }
-        window.addEventListener('resize', resizeCanvas);
-        resizeCanvas();
-
         let score = 0;
-        let shield = 100;
-        let wave = 1;
-        let isGameOver = false;
+        let lives = 3;
+        let isPlaying = false;
+        let hasShield = false;
+        let powerLevel = 1; // 1: Normal, 2: Double Shot, 3: Triple Shot
 
-        // Player Ship
-        let player = {
-            x: canvas.width / 2 - 25,
-            y: canvas.height - 70,
-            width: 50,
+        let ship = {
+            x: canvas.width / 2 - 20,
+            y: canvas.height - 60,
+            width: 40,
             height: 40,
-            speed: 8,
-            dx: 0,
-            color: "#00f0ff"
+            speed: 6,
+            dx: 0
         };
 
         let bullets = [];
         let enemies = [];
+        let powerUps = [];
         let particles = [];
-        let stars = [];
-
-        // Generate background starfield
-        for (let i = 0; i < 80; i++) {
-            stars.push({
-                x: Math.random() * canvas.width,
-                y: Math.random() * canvas.height,
-                radius: Math.random() * 2,
-                speed: Math.random() * 2 + 0.5
-            });
-        }
-
-        // Keyboard Controls
         let keys = {};
+
+        // Keyboard Event Listeners
         window.addEventListener("keydown", (e) => {
             keys[e.code] = true;
-            if (e.code === "Space") {
-                shootLaser();
-                e.preventDefault();
+            if (e.code === "Space" && isPlaying) {
+                shootBullet();
             }
         });
-        window.addEventListener("keyup", (e) => { keys[e.code] = false; });
 
-        function moveLeft() { player.x -= 35; }
-        function moveRight() { player.x += 35; }
+        window.addEventListener("keyup", (e) => {
+            keys[e.code] = false;
+        });
 
-        function shootLaser() {
-            if (isGameOver) return;
-            bullets.push({
-                x: player.x + player.width / 2 - 3,
-                y: player.y,
-                width: 6,
-                height: 15,
-                speed: 12,
-                color: "#ff0055"
-            });
-            // Muzzle flash particles
-            createParticles(player.x + player.width / 2, player.y, "#ff0055", 5);
+        function shootBullet() {
+            if (powerLevel === 1) {
+                bullets.push({ x: ship.x + ship.width / 2 - 3, y: ship.y, width: 6, height: 12, speed: 8 });
+            } else if (powerLevel === 2) {
+                bullets.push({ x: ship.x + 5, y: ship.y, width: 5, height: 12, speed: 8 });
+                bullets.push({ x: ship.x + ship.width - 10, y: ship.y, width: 5, height: 12, speed: 8 });
+            } else {
+                bullets.push({ x: ship.x + ship.width / 2 - 3, y: ship.y, width: 6, height: 12, speed: 8 });
+                bullets.push({ x: ship.x, y: ship.y + 5, width: 5, height: 10, speed: 8, dx: -1 });
+                bullets.push({ x: ship.x + ship.width - 5, y: ship.y + 5, width: 5, height: 10, speed: 8, dx: 1 });
+            }
         }
 
-        function createParticles(x, y, color, count) {
-            for (let i = 0; i < count; i++) {
-                particles.push({
-                    x: x,
-                    y: y,
-                    vx: (Math.random() - 0.5) * 6,
-                    vy: (Math.random() - 0.5) * 6,
-                    radius: Math.random() * 3 + 1,
-                    color: color,
-                    life: 25
+        function startGame() {
+            score = 0;
+            lives = 3;
+            hasShield = false;
+            powerLevel = 1;
+            bullets = [];
+            enemies = [];
+            powerUps = [];
+            particles = [];
+            isPlaying = true;
+            document.getElementById("startBtn").style.display = "none";
+            loop();
+        }
+
+        function spawnEnemy() {
+            // බාධක (Enemies) එන ප්‍රමාණය තරමක් පාලනය කර ඇත
+            if (Math.random() < 0.022) { 
+                let size = Math.random() * 20 + 25;
+                enemies.push({
+                    x: Math.random() * (canvas.width - size),
+                    y: -size,
+                    width: size,
+                    height: size,
+                    speed: Math.random() * 1.5 + 1.2 // වේගය තරමක් අඩු කර ඇත
+                });
+            }
+            // Shield හෝ Power-up එකක් අතරින් පතර පැමිණීම
+            if (Math.random() < 0.003) {
+                powerUps.push({
+                    x: Math.random() * (canvas.width - 30),
+                    y: -30,
+                    width: 30,
+                    height: 30,
+                    speed: 2,
+                    type: Math.random() > 0.5 ? 'shield' : 'powerup'
                 });
             }
         }
 
-        function spawnEnemy() {
-            let colors = ["#7000ff", "#ff0055", "#00f0ff"];
-            enemies.push({
-                x: Math.random() * (canvas.width - 40),
-                y: -40,
-                width: 40,
-                height: 35,
-                speed: Math.random() * 1.5 + 1.5 + (wave * 0.3),
-                color: colors[Math.floor(Math.random() * colors.length)]
-            });
-        }
-
-        let frameCount = 0;
         function update() {
-            if (isGameOver) return;
+            if (!isPlaying) return;
 
-            frameCount++;
-            if (frameCount % Math.max(30, 70 - wave * 5) === 0) {
-                spawnEnemy();
+            // Ship movement
+            if (keys["ArrowLeft"] || keys["KeyA"]) {
+                ship.x -= ship.speed;
             }
-
-            // Move background stars
-            for (let star of stars) {
-                star.y += star.speed;
-                if (star.y > canvas.height) star.y = 0;
+            if (keys["ArrowRight"] || keys["KeyD"]) {
+                ship.x += ship.speed;
             }
-
-            // Player movement via keys
-            if (keys["ArrowLeft"] || keys["KeyA"]) player.x -= player.speed;
-            if (keys["ArrowRight"] || keys["KeyD"]) player.x += player.speed;
 
             // Boundaries
-            if (player.x < 0) player.x = 0;
-            if (player.x + player.width > canvas.width) player.x = canvas.width - player.width;
+            if (ship.x < 0) ship.x = 0;
+            if (ship.x + ship.width > canvas.width) ship.x = canvas.width - ship.width;
 
             // Update Bullets
             for (let i = bullets.length - 1; i >= 0; i--) {
                 bullets[i].y -= bullets[i].speed;
-                if (bullets[i].y < 0) bullets.splice(i, 1);
+                if (bullets[i].dx) bullets[i].x += bullets[i].dx;
+                if (bullets[i].y < 0) {
+                    bullets.splice(i, 1);
+                }
             }
 
             // Update Enemies
+            spawnEnemy();
             for (let i = enemies.length - 1; i >= 0; i--) {
                 enemies[i].y += enemies[i].speed;
 
-                // Check collision with player
+                // Collision with Ship
                 if (
-                    player.x < enemies[i].x + enemies[i].width &&
-                    player.x + player.width > enemies[i].x &&
-                    player.y < enemies[i].y + enemies[i].height &&
-                    player.y + player.height > enemies[i].y
+                    ship.x < enemies[i].x + enemies[i].width &&
+                    ship.x + ship.width > enemies[i].x &&
+                    ship.y < enemies[i].y + enemies[i].height &&
+                    ship.y + ship.height > enemies[i].y
                 ) {
-                    shield -= 20;
-                    document.getElementById("shieldVal").innerText = shield;
-                    createParticles(enemies[i].x, enemies[i].y, "#ff0000", 15);
                     enemies.splice(i, 1);
-
-                    if (shield <= 0) {
-                        shield = 0;
-                        isGameOver = true;
+                    if (hasShield) {
+                        hasShield = false; // Shield එක මඟින් පහරින් බේරේ
+                    } else {
+                        lives--;
+                        powerLevel = 1; // පහරක් වැදුනහොත් Power level එක අඩුවේ
+                        if (lives <= 0) {
+                            isPlaying = false;
+                            document.getElementById("startBtn").style.display = "inline-block";
+                            document.getElementById("startBtn").innerText = "Play Again";
+                        }
                     }
+                    continue;
                 }
 
-                // Check collision with bullets
-                for (let j = bullets.length - 1; j >= 0; j--) {
-                    if (
-                        bullets[j] &&
-                        bullets[j].x < enemies[i].x + enemies[i].width &&
-                        bullets[j].x + bullets[j].width > enemies[i].x &&
-                        bullets[j].y < enemies[i].y + enemies[i].height &&
-                        bullets[j].y + bullets[j].height > enemies[i].y
-                    ) {
-                        createParticles(enemies[i].x, enemies[i].y, enemies[i].color, 12);
-                        enemies.splice(i, 1);
-                        bullets.splice(j, 1);
-                        score += 50;
-                        document.getElementById("scoreVal").innerText = score;
+                // Remove out of bounds
+                if (enemies[i].y > canvas.height) {
+                    enemies.splice(i, 1);
+                }
+            }
 
-                        // Increase wave based on score
-                        if (score % 300 === 0) {
-                            wave++;
-                            document.getElementById("waveVal").innerText = wave;
-                        }
+            // Update Power-ups
+            for (let i = powerUps.length - 1; i >= 0; i--) {
+                powerUps[i].y += powerUps[i].speed;
+
+                // Collision with Ship
+                if (
+                    ship.x < powerUps[i].x + powerUps[i].width &&
+                    ship.x + ship.width > powerUps[i].x &&
+                    ship.y < powerUps[i].y + powerUps[i].height &&
+                    ship.y + ship.height > powerUps[i].y
+                ) {
+                    if (powerUps[i].type === 'shield') {
+                        hasShield = true;
+                    } else {
+                        if (powerLevel < 3) powerLevel++;
+                    }
+                    powerUps.splice(i, 1);
+                    continue;
+                }
+
+                if (powerUps[i].y > canvas.height) {
+                    powerUps.splice(i, 1);
+                }
+            }
+
+            // Bullet & Enemy Collision
+            for (let i = bullets.length - 1; i >= 0; i--) {
+                for (let j = enemies.length - 1; j >= 0; j--) {
+                    if (
+                        bullets[i] &&
+                        bullets[i].x < enemies[j].x + enemies[j].width &&
+                        bullets[i].x + bullets[i].width > enemies[j].x &&
+                        bullets[i].y < enemies[j].y + enemies[j].height &&
+                        bullets[i].y + bullets[i].height > enemies[j].y
+                    ) {
+                        score += 10;
+                        enemies.splice(j, 1);
+                        bullets.splice(i, 1);
                         break;
                     }
                 }
-
-                // Remove enemy if passed bottom
-                if (enemies[i] && enemies[i].y > canvas.height) {
-                    enemies.splice(i, 1);
-                    shield -= 10;
-                    document.getElementById("shieldVal").innerText = shield;
-                    if (shield <= 0) isGameOver = true;
-                }
             }
 
-            // Update Particles
-            for (let i = particles.length - 1; i >= 0; i--) {
-                particles[i].x += particles[i].vx;
-                particles[i].y += particles[i].vy;
-                particles[i].life--;
-                if (particles[i].life <= 0) particles.splice(i, 1);
-            }
+            // Update UI
+            document.getElementById("scoreVal").innerText = score;
+            document.getElementById("shieldVal").innerText = hasShield ? "ACTIVE" : "OFF";
+            document.getElementById("livesVal").innerText = lives;
         }
 
         function draw() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-            // Draw Stars
-            ctx.fillStyle = "#ffffff";
-            for (let star of stars) {
-                ctx.globalAlpha = Math.random() * 0.8 + 0.2;
-                ctx.fillRect(star.x, star.y, star.radius, star.radius);
-            }
-            ctx.globalAlpha = 1.0;
-
-            // Draw Player Ship (Neon Style)
-            ctx.fillStyle = player.color;
+            // Draw Ship
+            ctx.fillStyle = "#00f0ff";
             ctx.beginPath();
-            ctx.moveTo(player.x + player.width / 2, player.y);
-            ctx.lineTo(player.x + player.width, player.y + player.height);
-            ctx.lineTo(player.x, player.y + player.height);
+            ctx.moveTo(ship.x + ship.width / 2, ship.y);
+            ctx.lineTo(ship.x, ship.y + ship.height);
+            ctx.lineTo(ship.x + ship.width, ship.y + ship.height);
             ctx.closePath();
             ctx.fill();
 
-            // Ship Core Glow
-            ctx.fillStyle = "#ffffff";
-            ctx.fillRect(player.x + player.width / 2 - 4, player.y + 15, 8, 12);
+            // Draw Shield Aura if active
+            if (hasShield) {
+                ctx.strokeStyle = "#00ff80";
+                ctx.lineWidth = 3;
+                ctx.beginPath();
+                ctx.arc(ship.x + ship.width / 2, ship.y + ship.height / 2, 30, 0, Math.PI * 2);
+                ctx.stroke();
+            }
 
             // Draw Bullets
-            for (let b of bullets) {
-                ctx.fillStyle = b.color;
-                ctx.shadowBlur = 10;
-                ctx.shadowColor = b.color;
+            ctx.fillStyle = "#ffcc00";
+            bullets.forEach(b => {
                 ctx.fillRect(b.x, b.y, b.width, b.height);
-                ctx.shadowBlur = 0; // reset
-            }
+            });
 
-            // Draw Enemies (Cyber Drones)
-            for (let e of enemies) {
-                ctx.fillStyle = e.color;
-                ctx.shadowBlur = 12;
-                ctx.shadowColor = e.color;
-                ctx.fillRect(e.x, e.y, e.width, e.height);
-                // Enemy Core
-                ctx.fillStyle = "#ffffff";
-                ctx.fillRect(e.x + 12, e.y + 12, 16, 10);
-                ctx.shadowBlur = 0;
-            }
-
-            // Draw Particles
-            for (let p of particles) {
-                ctx.fillStyle = p.color;
+            // Draw Enemies (Asteroids)
+            ctx.fillStyle = "#ff4d4d";
+            enemies.forEach(e => {
                 ctx.beginPath();
-                ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+                ctx.arc(e.x + e.width / 2, e.y + e.height / 2, e.width / 2, 0, Math.PI * 2);
                 ctx.fill();
-            }
+            });
 
-            // Game Over Screen
-            if (isGameOver) {
-                ctx.fillStyle = "rgba(3, 7, 18, 0.85)";
-                ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-                ctx.fillStyle = "#ff0055";
-                ctx.font = "bold 40px 'Rajdhani', sans-serif";
-                ctx.textAlign = "center";
-                ctx.fillText("SYSTEM FAILURE 💥", canvas.width / 2, canvas.height / 2 - 30);
-
-                ctx.fillStyle = "#00f0ff";
-                ctx.font = "22px 'Outfit', sans-serif";
-                ctx.fillText("Click or Tap anywhere to Restart", canvas.width / 2, canvas.height / 2 + 20);
-            }
+            // Draw Power-ups (Green/Blue glowing items)
+            powerUps.forEach(p => {
+                ctx.fillStyle = p.type === 'shield' ? '#00ff80' : '#00f0ff';
+                ctx.fillRect(p.x, p.y, p.width, p.height);
+            });
         }
 
         function loop() {
             update();
             draw();
-            requestAnimationFrame(loop);
+            if (isPlaying) {
+                requestAnimationFrame(loop);
+            }
         }
-
-        canvas.addEventListener("click", () => {
-            if (isGameOver) location.reload();
-        });
-
-        loop();
     </script>
 </body>
 </html>
