@@ -8,7 +8,7 @@
     <meta name="google-site-verification" content="KFpD8UWejjaFyKOmXaER0cneuFGwwAkyWqxn1dqGq_Q" />
     <title>Seni & Mahe AI Creations - Next-Gen AI Video Production</title>
     
-    <!-- Ad Script Added -->
+    <!-- Social Bar Ad Script -->
     <script src="https://pl30935109.effectivecpmnetwork.com/0d/b6/38/0db6386dfcfd076eff205bedad41ca44.js"></script>
 
     <meta name="description" content="Specializing in YouTube Shorts, TikTok Reels, Cinematic Short-form Content, and Strategic Short Ads powered by cutting-edge AI.">
@@ -215,9 +215,24 @@
             display: block;
         }
 
+        /* Top 728x90 Banner Ad Wrapper Styling */
+        .top-ad-banner-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 1rem auto 2rem auto;
+            padding: 0.5rem;
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            max-width: 760px;
+            overflow-x: auto;
+            box-shadow: 0 0 15px rgba(0, 240, 255, 0.1);
+        }
+
         .hero {
             text-align: center;
-            padding: 2rem 5% 4rem 5%;
+            padding: 1rem 5% 4rem 5%;
             max-width: 900px;
             margin: 0 auto;
         }
@@ -369,6 +384,20 @@
             border-color: var(--accent-cyan);
             color: var(--accent-cyan);
             box-shadow: 0 0 15px rgba(0, 240, 255, 0.2);
+        }
+
+        /* 300x250 Ad Banner Container Styling */
+        .ad-banner-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 2.5rem auto;
+            padding: 1rem;
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            max-width: 350px;
+            box-shadow: 0 0 20px rgba(0, 240, 255, 0.1);
         }
 
         .section-title {
@@ -706,6 +735,10 @@
                 width: 60px;
                 height: 60px;
             }
+            .top-ad-banner-container {
+                max-width: 100%;
+                overflow-x: auto;
+            }
         }
     </style>
 </head>
@@ -746,6 +779,21 @@
 
     <!-- HOME SECTION -->
     <section class="page-section active" id="home">
+        
+        <!-- 728x90 Leaderboard Ad Banner Added Here Below Header -->
+        <div class="top-ad-banner-container">
+            <script>
+              atOptions = {
+                'key' : '8fd49943e78f49bf5a042589931ed902',
+                'format' : 'iframe',
+                'height' : 90,
+                'width' : 728,
+                'params' : {}
+              };
+            </script>
+            <script src="https://www.highperformanceformat.com/8fd49943e78f49bf5a042589931ed902/invoke.js"></script>
+        </div>
+
         <div class="hero">
             <div class="play-win-container">
                 <a href="games.html" class="play-win-btn">
@@ -763,6 +811,20 @@
             <div class="cta-btns">
                 <button onclick="showSection('pricing')" class="btn-primary">View Pricing</button>
                 <button onclick="showSection('portfolio')" class="btn-secondary">Watch Showcase</button>
+            </div>
+
+            <!-- 300x250 Ad Banner Added Here for Maximum Visibility -->
+            <div class="ad-banner-container">
+                <script>
+                  atOptions = {
+                    'key' : '5aa806ee234e65827df03ab2e1a231e5',
+                    'format' : 'iframe',
+                    'height' : 250,
+                    'width' : 300,
+                    'params' : {}
+                  };
+                </script>
+                <script src="https://www.highperformanceformat.com/5aa806ee234e65827df03ab2e1a231e5/invoke.js"></script>
             </div>
         </div>
     </section>
@@ -1060,10 +1122,6 @@
                 let totalRatingSum = 0;
                 let reviewsHTML = "";
 
-                querySnapshot.querySnapshot.forEach((doc) => {
-                    // handled safely below
-                });
-
                 querySnapshot.forEach((doc) => {
                     const review = doc.data();
                     totalReviews++;
@@ -1142,7 +1200,7 @@
             sections.forEach(sec => sec.classList.remove('active'));
 
             const targetSection = document.getElementById(sectionId);
-            if (targetSection) {
+            if, targetSection) {
                 targetSection.classList.add('active');
             }
 
