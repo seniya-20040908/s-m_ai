@@ -247,10 +247,6 @@
                 <span>🛞 Grip Tires</span>
                 <span id="costTires" style="font-size: 0.85rem; color: var(--accent-cyan);">15 Coins</span>
             </button>
-            <button class="upgrade-btn" onclick="buyUpgrade('gyro')">
-                <span>🛡️ Auto-Balance</span>
-                <span id="costGyro" style="font-size: 0.85rem; color: var(--accent-cyan);">30 Coins</span>
-            </button>
         </div>
     </div>
 
@@ -265,21 +261,22 @@
         let cameraY = 0;
         let explosionParticles = [];
 
+        // Upgrades level (Gyro removed completely)
         let upgrades = {
             engine: { level: 1, cost: 20 },
-            tires: { level: 1, cost: 15 },
-            gyro: { level: 0, cost: 30 }
+            tires: { level: 1, cost: 15 }
         };
 
+        // Car Object - Increased length (width: 90 instead of 55)
         let car = {
             x: 100,
             y: 200,
             vx: 0,
             vy: 0,
             angle: 0,
-            width: 55,
-            height: 28,
-            power: 0.22,
+            width: 90,   // වැඩි කළ දිග (Longer vehicle body)
+            height: 26,
+            power: 0.20,
             gravity: 0.28,
             friction: 0.985
         };
@@ -305,15 +302,13 @@
                 let index = startX + i;
                 let x = index * 15;
                 
-                // Combining multiple sine & cosine waves + steep mega-hill multipliers for ultimate variation
                 let height = 280 + 
                              Math.sin(index * 0.02) * 90 + 
                              Math.cos(index * 0.008) * 140 + 
-                             Math.sin(index * 0.003) * 220; // Massive unpredictable hills
+                             Math.sin(index * 0.003) * 220;
 
                 terrain.push({ x: x, y: height });
                 
-                // Place coins on hills
                 if (index % 4 === 0 && index > 5) {
                     coinList.push({ x: x, y: height - 35, collected: false });
                 }
@@ -321,11 +316,9 @@
             generatedLength = (startX + count) * 15;
         }
 
-        // Initialize first terrain chunk (up to distance 6000)
         generateTerrainChunk(0, 400);
 
         function getTerrainHeight(x) {
-            // Automatically generate more terrain ahead if the car approaches the end
             if (x > generatedLength - 1000) {
                 let nextIndex = Math.floor(generatedLength / 15);
                 generateTerrainChunk(nextIndex, 200);
@@ -347,9 +340,8 @@
                 upgrades[type].level++;
                 upgrades[type].cost = Math.floor(upgrades[type].cost * 1.5);
 
-                if (type === 'engine') car.power += 0.06;
+                if (type === 'engine') car.power += 0.05;
                 if (type === 'tires') car.friction += 0.003;
-                if (type === 'gyro') car.gyroActive = true;
 
                 updateUI();
             }
@@ -359,19 +351,18 @@
             document.getElementById("coinDisplay").innerText = "Coins: 🪙 " + coins;
             document.getElementById("costEngine").innerText = upgrades.engine.cost + " Coins";
             document.getElementById("costTires").innerText = upgrades.tires.cost + " Coins";
-            document.getElementById("costGyro").innerText = upgrades.gyro.level > 0 ? "MAX" : upgrades.gyro.cost + " Coins";
         }
 
         function triggerExplosion(x, y) {
             gameOver = true;
             explosionParticles = [];
-            for (let i = 0; i < 50; i++) {
+            for (let i = 0; i < 60; i++) {
                 explosionParticles.push({
                     x: x,
                     y: y,
-                    vx: (Math.random() - 0.5) * 10,
-                    vy: (Math.random() - 0.5) * 10,
-                    radius: Math.random() * 4 + 2,
+                    vx: (Math.random() - 0.5) * 12,
+                    vy: (Math.random() - 0.5) * 12,
+                    radius: Math.random() * 5 + 2,
                     color: Math.random() > 0.5 ? "#ff0055" : "#fbbf24",
                     alpha: 1
                 });
@@ -440,8 +431,8 @@
                     car.y = groundY - 14;
                     car.vy = 0;
                     
-                    let nextGroundY = getTerrainHeight(car.x + 12);
-                    let slope = (nextGroundY - groundY) / 12;
+                    let nextGroundY = getTerrainHeight(car.x + 15);
+                    let slope = (nextGroundY - groundY) / 15;
                     let targetAngle = Math.atan(slope);
 
                     car.angle += (targetAngle - car.angle) * 0.2;
@@ -451,12 +442,9 @@
                     }
                 } else {
                     car.y += car.vy;
-                    if (keys["ArrowRight"]) car.angle += 0.06;
-                    if (keys["ArrowLeft"]) car.angle -= 0.06;
-                    
-                    if (upgrades.gyro.level > 0) {
-                        car.angle *= 0.95; 
-                    }
+                    // In-air rotation physics (Very sensitive since vehicle is long and no auto-balance!)
+                    if (keys["ArrowRight"]) car.angle += 0.07;
+                    if (keys["ArrowLeft"]) car.angle -= 0.07;
                 }
 
                 let targetCameraX = car.x - canvas.width / 2.5;
@@ -477,7 +465,8 @@
                     }
                 });
 
-                if (Math.abs(car.angle) > 1.55) {
+                // CRASH CONDITION: Without auto-balance, long body easily flips and crashes!
+                if (Math.abs(car.angle) > 1.45) {
                     triggerExplosion(car.x, car.y);
                 }
             } else {
@@ -504,7 +493,7 @@
                 ctx.stroke();
             }
 
-            // Draw Endless Terrain
+            // Draw Terrain
             ctx.beginPath();
             ctx.moveTo(terrain[0].x, terrain[0].y + 1500);
             for (let i = 0; i < terrain.length; i++) {
@@ -534,24 +523,27 @@
                 }
             });
 
-            // Car / Explosion
+            // Draw Longer Car / Explosion
             if (!gameOver) {
                 ctx.save();
                 ctx.translate(car.x, car.y);
                 ctx.rotate(car.angle);
 
+                // Longer Chassis
                 ctx.fillStyle = "#ff0055";
                 ctx.shadowBlur = 12;
                 ctx.shadowColor = "#ff0055";
                 ctx.fillRect(-car.width / 2, -car.height, car.width, car.height - 6);
                 
+                // Cabin / Windshield
                 ctx.fillStyle = "#00f0ff";
-                ctx.fillRect(-car.width / 4, -car.height - 10, car.width / 2, 10);
+                ctx.fillRect(-car.width / 5, -car.height - 10, car.width / 2.5, 10);
                 ctx.shadowBlur = 0;
 
+                // Wheels (Spread further apart due to long body)
                 ctx.beginPath();
-                ctx.arc(-car.width / 3, 4, 9, 0, Math.PI * 2);
-                ctx.arc(car.width / 3, 4, 9, 0, Math.PI * 2);
+                ctx.arc(-car.width / 2.5, 4, 10, 0, Math.PI * 2);
+                ctx.arc(car.width / 2.5, 4, 10, 0, Math.PI * 2);
                 ctx.fillStyle = "#1e293b";
                 ctx.strokeStyle = "#ffffff";
                 ctx.lineWidth = 3;
