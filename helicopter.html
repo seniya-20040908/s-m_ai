@@ -33,14 +33,14 @@
         <button onclick="toggleFS()">FULL SCREEN</button>
     </div>
     <canvas id="gameCanvas" width="910" height="400"></canvas>
-    <div class="controls-info">Move: Arrow Keys | Shoot Down: Spacebar | Dodge Enemy Missiles!</div>
+    <div class="controls-info">Move: Arrow Keys | Shoot Down: Shift Key | Dodge Enemy Missiles!</div>
 </div>
 
 <script>
     const canvas = document.getElementById("gameCanvas");
     const ctx = canvas.getContext("2d");
 
-    let heli = { x: 100, y: 150, width: 50, height: 22, speed: 4, hp: 100, maxHp: 100, rotor: 0, dead: false };
+    let heli = { x: 100, y: 150, width: 50, height: 22, speed: 5, hp: 100, maxHp: 100, rotor: 0, dead: false };
     let bullets = [];      
     let missiles = [];     
     let trucks = [];       
@@ -55,8 +55,11 @@
 
     window.addEventListener('keydown', (e) => {
         keys[e.code] = true;
-        if(e.code === 'Space' && !heli.dead) {
-            bullets.push({ x: heli.x + heli.width/2, y: heli.y + heli.height, speed: 7 });
+        // Shoot using Shift key
+        if(e.code === 'ShiftLeft' || e.code === 'ShiftRight') {
+            if(!heli.dead) {
+                bullets.push({ x: heli.x + heli.width/2, y: heli.y + heli.height, speed: 7 });
+            }
         }
     });
 
@@ -67,8 +70,8 @@
     function spawnTruck() {
         if(Math.random() < 0.018) {
             trucks.push({
-                x: 910,
-                y: 365,
+                x: canvas.width,
+                y: canvas.height - 35,
                 width: 50,
                 height: 25,
                 speed: 3,
@@ -80,10 +83,11 @@
     function update() {
         if(heli.dead) return;
 
+        // Freedom of movement across the entire screen boundaries
         if(keys['ArrowUp'] && heli.y > 10) heli.y -= heli.speed;
-        if(keys['ArrowDown'] && heli.y < 320) heli.y += heli.speed;
-        if(keys['ArrowLeft'] && heli.x > 30) heli.x -= heli.speed;
-        if(keys['ArrowRight'] && heli.x < 500) heli.x += heli.speed;
+        if(keys['ArrowDown'] && heli.y < canvas.height - heli.height - 15) heli.y += heli.speed;
+        if(keys['ArrowLeft'] && heli.x > 10) heli.x -= heli.speed;
+        if(keys['ArrowRight'] && heli.x < canvas.width - heli.width - 10) heli.x += heli.speed;
 
         bullets.forEach((b, index) => {
             b.y += b.speed;
@@ -135,7 +139,7 @@
         for(let i=0; i<canvas.height; i+=40) { ctx.beginPath(); ctx.moveTo(0,i); ctx.lineTo(canvas.width,i); ctx.stroke(); }
         
         ctx.fillStyle = "#1e293b";
-        ctx.fillRect(0, 390, canvas.width, 10);
+        ctx.fillRect(0, canvas.height - 10, canvas.width, 10);
 
         if(!heli.dead) {
             ctx.save();
@@ -199,14 +203,14 @@
         ctx.font = "bold 18px 'Rajdhani'";
         ctx.fillText("SCORE: " + score, 20, 30);
         
-        ctx.fillText("HP: ", 750, 30);
+        ctx.fillText("HP: ", canvas.height > 500 ? canvas.width - 160 : 750, 30);
         ctx.strokeStyle = "#00f0ff";
         ctx.lineWidth = 2;
-        ctx.strokeRect(780, 15, 110, 20);
+        ctx.strokeRect(canvas.height > 500 ? canvas.width - 130 : 780, 15, 110, 20);
         ctx.fillStyle = "#ff0055";
         let hpWidth = (heli.hp / heli.maxHp) * 106;
         if(hpWidth < 0) hpWidth = 0;
-        ctx.fillRect(782, 17, hpWidth, 16);
+        ctx.fillRect(canvas.height > 500 ? canvas.width - 128 : 782, 17, hpWidth, 16);
 
         if(heli.dead) {
             ctx.fillStyle = "rgba(255, 0, 85, 0.3)";
