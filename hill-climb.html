@@ -82,6 +82,7 @@
             justify-content: center;
         }
 
+        /* Fullscreen styles for game container */
         .game-container {
             background: var(--card-bg);
             padding: 15px;
@@ -91,6 +92,32 @@
             position: relative;
         }
 
+        .game-container:fullscreen {
+            width: 100vw;
+            height: 100vh;
+            padding: 0;
+            border: none;
+            border-radius: 0;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background: #020617;
+        }
+
+        .game-container:-webkit-full-screen {
+            width: 100vw;
+            height: 100vh;
+            padding: 0;
+            border: none;
+            border-radius: 0;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background: #020617;
+        }
+
         canvas {
             background: linear-gradient(to bottom, #020617, #0f172a, #1e1b4b);
             border-radius: 12px;
@@ -98,7 +125,23 @@
             display: block;
             width: 100%;
             max-width: 760px;
-            height: auto;
+            height: 420px;
+        }
+
+        .game-container:fullscreen canvas {
+            width: 100% !important;
+            height: 100% !important;
+            max-width: none;
+            border: none;
+            border-radius: 0;
+        }
+
+        .game-container:-webkit-full-screen canvas {
+            width: 100% !important;
+            height: 100% !important;
+            max-width: none;
+            border: none;
+            border-radius: 0;
         }
 
         .upgrade-panel {
@@ -220,7 +263,7 @@
         let coins = 0;
         let gameOver = false;
         let cameraX = 0;
-        let cameraY = 0; // Added vertical camera tracking for smooth hill descents
+        let cameraY = 0;
         let explosionParticles = [];
 
         let upgrades = {
@@ -328,11 +371,31 @@
         function toggleFullScreen() {
             let elem = document.getElementById("gameBox");
             if (!document.fullscreenElement) {
-                elem.requestFullscreen().catch(err => {
-                    alert(`Error attempting to enable fullscreen: ${err.message}`);
-                });
+                if (elem.requestFullscreen) {
+                    elem.requestFullscreen();
+                } else if (elem.webkitRequestFullscreen) { /* Safari */
+                    elem.webkitRequestFullscreen();
+                }
             } else {
-                document.exitFullscreen();
+                if (document.exitFullscreen) {
+                    document.exitFullscreen();
+                } else if (document.webkitExitFullscreen) { /* Safari */
+                    document.webkitExitFullscreen();
+                }
+            }
+        }
+
+        // Automatically resize canvas drawing resolution when entering/exiting fullscreen
+        document.addEventListener("fullscreenchange", handleFullscreenResize);
+        document.addEventListener("webkitfullscreenchange", handleFullscreenResize);
+
+        function handleFullscreenResize() {
+            if (document.fullscreenElement || document.webkitFullscreenElement) {
+                canvas.width = window.innerWidth;
+                canvas.height = window.innerHeight - 60; // leave space for controls bar
+            } else {
+                canvas.width = 760;
+                canvas.height = 420;
             }
         }
 
@@ -374,7 +437,6 @@
                     }
                 }
 
-                // Smooth Camera tracking for both X and Y (Keeps car clearly centered even when descending hills)
                 let targetCameraX = car.x - canvas.width / 2.5;
                 let targetCameraY = car.y - canvas.height / 2;
                 cameraX += (targetCameraX - cameraX) * 0.1;
@@ -409,10 +471,8 @@
             ctx.clearRect(0, 0, canvas.width, canvas.height);
 
             ctx.save();
-            // Apply 2D Camera translation for both X and Y axis
             ctx.translate(-cameraX, -cameraY);
 
-            // Terrain Background Grid
             ctx.strokeStyle = "rgba(0, 240, 255, 0.05)";
             ctx.lineWidth = 1;
             for (let i = Math.floor(cameraX / 50) * 50; i < cameraX + canvas.width; i += 50) {
@@ -422,13 +482,12 @@
                 ctx.stroke();
             }
 
-            // Draw Terrain
             ctx.beginPath();
-            ctx.moveTo(terrain[0].x, terrain[0].y + 500);
+            ctx.moveTo(terrain[0].x, terrain[0].y + 1000);
             for (let i = 0; i < terrain.length; i++) {
                 ctx.lineTo(terrain[i].x, terrain[i].y);
             }
-            ctx.lineTo(terrain[terrain.length - 1].x, terrain[terrain.length - 1].y + 500);
+            ctx.lineTo(terrain[terrain.length - 1].x, terrain[terrain.length - 1].y + 1000);
             ctx.fillStyle = "#0f172a";
             ctx.fill();
             
@@ -439,7 +498,6 @@
             ctx.stroke();
             ctx.shadowBlur = 0;
 
-            // Coins
             coinList.forEach(coin => {
                 if (!coin.collected && coin.x > cameraX - 50 && coin.x < cameraX + canvas.width + 50) {
                     ctx.beginPath();
@@ -452,7 +510,6 @@
                 }
             });
 
-            // Car or Explosion
             if (!gameOver) {
                 ctx.save();
                 ctx.translate(car.x, car.y);
@@ -472,6 +529,7 @@
                 ctx.arc(car.width / 3, 4, 9, 0, Math.PI * 2);
                 ctx.fillStyle = "#1e293b";
                 ctx.strokeStyle = "#ffffff";
+                ctx.lineWidth.width = 3;
                 ctx.lineWidth = 3;
                 ctx.fill();
                 ctx.stroke();
@@ -493,7 +551,6 @@
 
             ctx.restore();
 
-            // Fixed UI Overlay (Score & Coins stay visible on top-left)
             ctx.fillStyle = "#ffffff";
             ctx.font = "bold 18px 'Outfit', sans-serif";
             ctx.fillText("Score: " + score, 20, 35);
@@ -515,7 +572,7 @@
                 ctx.fillStyle = "#00f0ff";
                 ctx.font = "18px 'Outfit', sans-serif";
                 ctx.fillText("Press SPACEBAR to Restart", canvas.width / 2, canvas.height / 2 + 25);
-                ctx.textAlign = "left";
+                ctx.textAlign, ctx.textAlign = "left";
             }
         }
 
