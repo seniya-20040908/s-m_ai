@@ -82,7 +82,6 @@
             justify-content: center;
         }
 
-        /* Fullscreen styles for game container */
         .game-container {
             background: var(--card-bg);
             padding: 15px;
@@ -296,18 +295,42 @@
             keys[e.code] = false;
         });
 
+        // Endless Dynamic Terrain Generation System
         let terrain = [];
         let coinList = [];
-        for (let i = 0; i < 3000; i++) {
-            let height = 280 + Math.sin(i * 0.025) * 80 + Math.cos(i * 0.01) * 120;
-            terrain.push({ x: i * 15, y: height });
-            
-            if (i % 5 === 0 && i > 5) {
-                coinList.push({ x: i * 15, y: height - 35, collected: false });
+        let generatedLength = 0;
+
+        function generateTerrainChunk(startX, count) {
+            for (let i = 0; i < count; i++) {
+                let index = startX + i;
+                let x = index * 15;
+                
+                // Combining multiple sine & cosine waves + steep mega-hill multipliers for ultimate variation
+                let height = 280 + 
+                             Math.sin(index * 0.02) * 90 + 
+                             Math.cos(index * 0.008) * 140 + 
+                             Math.sin(index * 0.003) * 220; // Massive unpredictable hills
+
+                terrain.push({ x: x, y: height });
+                
+                // Place coins on hills
+                if (index % 4 === 0 && index > 5) {
+                    coinList.push({ x: x, y: height - 35, collected: false });
+                }
             }
+            generatedLength = (startX + count) * 15;
         }
 
+        // Initialize first terrain chunk (up to distance 6000)
+        generateTerrainChunk(0, 400);
+
         function getTerrainHeight(x) {
+            // Automatically generate more terrain ahead if the car approaches the end
+            if (x > generatedLength - 1000) {
+                let nextIndex = Math.floor(generatedLength / 15);
+                generateTerrainChunk(nextIndex, 200);
+            }
+
             let index = Math.floor(x / 15);
             if (index < 0) return terrain[0].y;
             if (index >= terrain.length - 1) return terrain[terrain.length - 1].y;
@@ -373,26 +396,25 @@
             if (!document.fullscreenElement) {
                 if (elem.requestFullscreen) {
                     elem.requestFullscreen();
-                } else if (elem.webkitRequestFullscreen) { /* Safari */
+                } else if (elem.webkitRequestFullscreen) {
                     elem.webkitRequestFullscreen();
                 }
             } else {
                 if (document.exitFullscreen) {
                     document.exitFullscreen();
-                } else if (document.webkitExitFullscreen) { /* Safari */
+                } else if (document.webkitExitFullscreen) {
                     document.webkitExitFullscreen();
                 }
             }
         }
 
-        // Automatically resize canvas drawing resolution when entering/exiting fullscreen
         document.addEventListener("fullscreenchange", handleFullscreenResize);
         document.addEventListener("webkitfullscreenchange", handleFullscreenResize);
 
         function handleFullscreenResize() {
             if (document.fullscreenElement || document.webkitFullscreenElement) {
                 canvas.width = window.innerWidth;
-                canvas.height = window.innerHeight - 60; // leave space for controls bar
+                canvas.height = window.innerHeight - 60;
             } else {
                 canvas.width = 760;
                 canvas.height = 420;
@@ -482,12 +504,13 @@
                 ctx.stroke();
             }
 
+            // Draw Endless Terrain
             ctx.beginPath();
-            ctx.moveTo(terrain[0].x, terrain[0].y + 1000);
+            ctx.moveTo(terrain[0].x, terrain[0].y + 1500);
             for (let i = 0; i < terrain.length; i++) {
                 ctx.lineTo(terrain[i].x, terrain[i].y);
             }
-            ctx.lineTo(terrain[terrain.length - 1].x, terrain[terrain.length - 1].y + 1000);
+            ctx.lineTo(terrain[terrain.length - 1].x, terrain[terrain.length - 1].y + 1500);
             ctx.fillStyle = "#0f172a";
             ctx.fill();
             
@@ -498,6 +521,7 @@
             ctx.stroke();
             ctx.shadowBlur = 0;
 
+            // Draw Coins
             coinList.forEach(coin => {
                 if (!coin.collected && coin.x > cameraX - 50 && coin.x < cameraX + canvas.width + 50) {
                     ctx.beginPath();
@@ -510,6 +534,7 @@
                 }
             });
 
+            // Car / Explosion
             if (!gameOver) {
                 ctx.save();
                 ctx.translate(car.x, car.y);
@@ -529,7 +554,6 @@
                 ctx.arc(car.width / 3, 4, 9, 0, Math.PI * 2);
                 ctx.fillStyle = "#1e293b";
                 ctx.strokeStyle = "#ffffff";
-                ctx.lineWidth.width = 3;
                 ctx.lineWidth = 3;
                 ctx.fill();
                 ctx.stroke();
@@ -551,6 +575,7 @@
 
             ctx.restore();
 
+            // HUD UI
             ctx.fillStyle = "#ffffff";
             ctx.font = "bold 18px 'Outfit', sans-serif";
             ctx.fillText("Score: " + score, 20, 35);
@@ -572,7 +597,7 @@
                 ctx.fillStyle = "#00f0ff";
                 ctx.font = "18px 'Outfit', sans-serif";
                 ctx.fillText("Press SPACEBAR to Restart", canvas.width / 2, canvas.height / 2 + 25);
-                ctx.textAlign, ctx.textAlign = "left";
+                ctx.textAlign = "left";
             }
         }
 
