@@ -230,7 +230,7 @@
         <div class="game-container" id="gameBox">
             <canvas id="gameCanvas" width="760" height="420"></canvas>
             <div class="controls-info">
-                <span>Arrows</span>: Drive/Brake | <span>SPACE</span>: Restart
+                <span>Arrows</span>: Drive/Reverse | <span>SPACE</span>: Restart
                 <button class="fullscreen-btn" onclick="toggleFullScreen()">Full Screen ⛶</button>
             </div>
         </div>
@@ -260,6 +260,9 @@
         let cameraX = 0;
         let cameraY = 0;
         let explosionParticles = [];
+        let totalFlips = 0;
+        let lastAngle = 0;
+        let accumulatedRotation = 0;
 
         let upgrades = {
             engine: { level: 1, cost: 20 },
@@ -274,9 +277,9 @@
             angle: 0,
             width: 90,
             height: 26,
-            power: 0.20,
+            power: 0.22,
             gravity: 0.28,
-            friction: 0.985
+            friction: 0.988
         };
 
         let keys = {};
@@ -299,10 +302,11 @@
                 let index = startX + i;
                 let x = index * 15;
                 
+                // Massive cliffs and sharp steep hills configuration
                 let height = 280 + 
-                             Math.sin(index * 0.02) * 90 + 
-                             Math.cos(index * 0.008) * 140 + 
-                             Math.sin(index * 0.003) * 220;
+                           Math.sin(index * 0.03) * 110 + 
+                           Math.cos(index * 0.01) * 180 + 
+                           Math.sin(index * 0.004) * 320;
 
                 terrain.push({ x: x, y: height });
                 
@@ -313,12 +317,12 @@
             generatedLength = (startX + count) * 15;
         }
 
-        generateTerrainChunk(0, 400);
+        generateTerrainChunk(0, 600);
 
         function getTerrainHeight(x) {
             if (x > generatedLength - 1000) {
                 let nextIndex = Math.floor(generatedLength / 15);
-                generateTerrainChunk(nextIndex, 200);
+                generateTerrainChunk(nextIndex, 300);
             }
 
             let index = Math.floor(x / 15);
@@ -372,6 +376,8 @@
             car.vx = 0;
             car.vy = 0;
             car.angle = 0;
+            lastAngle = 0;
+            accumulatedRotation = 0;
             cameraX = 0;
             cameraY = 0;
             score = 0;
@@ -411,27 +417,12 @@
 
         function update() {
             if (!gameOver) {
-                // Driving & Brake System
+                // Driving & Reverse System
                 if (keys["ArrowRight"]) {
-                    if (car.vx < 0) {
-                        // Moving left, but pressing Right -> BRAKE!
-                        car.vx *= 0.85; 
-                    } else {
-                        car.vx += car.power; // Accelerate Forward
-                    }
+                    car.vx += car.power; // Forward
                 }
                 if (keys["ArrowLeft"]) {
-                    if (car.vx > 0) {
-                        // Moving right (forward), but pressing Left -> BRAKE / REVERSE!
-                        car.vx *= 0.80; // Sharp Brake effect
-                        
-                        // WARNING: If speed is too high and user slams brake, momentum tips the car forward/over!
-                        if (car.vx > 4.5 && car.y >= getTerrainHeight(car.x) - 15) {
-                            car.angle -= 0.12; // Weight transfers forward and flips!
-                        }
-                    } else {
-                        car.vx -= car.power * 0.6; // Moving backward
-                    }
+                    car.vx -= car.power * 0.8; // Reverse / Backward movement
                 }
 
                 car.vy += car.gravity;
@@ -449,6 +440,8 @@
                     let targetAngle = Math.atan(slope);
 
                     car.angle += (targetAngle - car.angle) * 0.2;
+                    lastAngle = car.angle;
+                    accumulatedRotation = 0; // Reset flip tracker when landed safely
 
                     if (keys["ArrowRight"] && car.vx > 0) {
                         car.vy = -slope * car.vx * 0.55;
@@ -457,6 +450,19 @@
                     car.y += car.vy;
                     if (keys["ArrowRight"]) car.angle += 0.07;
                     if (keys["ArrowLeft"]) car.angle -= 0.07;
+
+                    // Track mid-air rotation for flips
+                    let deltaAngle = car.angle - lastAngle;
+                    accumulatedRotation += deltaAngle;
+                    lastAngle = car.angle;
+
+                    // Check full 360-degree rotation (Flip completed)
+                    if (Math.abs(accumulatedRotation) >= Math.PI * 2) {
+                        let flipsDone = Math.floor(Math.abs(accumulatedRotation) / (Math.PI * 2));
+                        coins += flipsDone * 100; // 100 coins per flip multiplied by count
+                        updateUI();
+                        accumulatedRotation %= (Math.PI * 2); // reset remainder
+                    }
                 }
 
                 let targetCameraX = car.x - canvas.width / 2.5;
@@ -477,8 +483,8 @@
                     }
                 });
 
-                // CRASH CONDITION: If angle flips too much or brake causes a front-flip crash
-                if (Math.abs(car.angle) > 1.45) {
+                // CRASH CONDITION: If angle flips too much or bad landing crash
+                if (Math.abs(car.angle) > 1.55 && car.y >= groundY - 15) {
                     triggerExplosion(car.x, car.y);
                 }
             } else {
@@ -507,11 +513,11 @@
 
             // Draw Terrain
             ctx.beginPath();
-            ctx.moveTo(terrain[0].x, terrain[0].y + 1500);
+            ctx.moveTo(terrain[0].x, terrain[0].y + 2500);
             for (let i = 0; i < terrain.length; i++) {
                 ctx.lineTo(terrain[i].x, terrain[i].y);
             }
-            ctx.lineTo(terrain[terrain.length - 1].x, terrain[terrain.length - 1].y + 1500);
+            ctx.lineTo(terrain[terrain.length - 1].x, terrain[terrain.length - 1].y + 2500);
             ctx.fillStyle = "#0f172a";
             ctx.fill();
             
