@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Neon Chopper - Action Edition</title>
+    <title>Heavy Cargo Chopper</title>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Rajdhani:wght@500;700;800&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -108,14 +108,14 @@
 
     <header>
         <a href="games.html" class="back-btn">&#8592; Back</a>
-        <h1>Neon Chopper: Sky Battle</h1>
+        <h1>Heavy Cargo Overload Chopper</h1>
         <div style="width: 50px;"></div>
     </header>
 
     <div class="game-container">
         <canvas id="gameCanvas" width="800" height="450"></canvas>
         <div class="controls-hint">
-            <span>UP / DOWN ARROWS</span> or <span>MOUSE</span> to Move | Collect Stars, Avoid Missiles!
+            <span>HOLD CLICK / SPACE</span> to Lift Cargo | Don't Overload or Hit Limits!
         </div>
     </div>
 
@@ -124,91 +124,72 @@
         const ctx = canvas.getContext("2d");
 
         let score = 0;
-        let highScore = localStorage.getItem("chopperActionHighScore") || 0;
+        let highScore = localStorage.getItem("cargoChopperHighScore") || 0;
         let gameOver = false;
         let gameStarted = false;
 
-        // Helicopter Object
+        // Helicopter & Cargo Properties
         let heli = {
-            x: 100,
-            y: 225,
-            w: 60,
-            h: 30,
-            speed: 5,
-            rotorAngle: 0
+            x: 150,
+            y: 200,
+            w: 55,
+            h: 26,
+            vy: 0,
+            lift: -0.35,
+            gravity: 0.25,
+            rotorAngle: 0,
+            cargoWeight: 1 // මුලින් තියෙන සාමාන්‍ය බර
         };
 
-        let missiles = [];
-        let stars = [];
+        let cargos = [];
         let particles = [];
         let frameCount = 0;
 
-        let keys = {};
+        let isHolding = false;
+        window.addEventListener("mousedown", () => { isHolding = true; if(!gameStarted) gameStarted = true; if(gameOver) resetGame(); });
+        window.addEventListener("mouseup", () => { isHolding = false; });
         window.addEventListener("keydown", (e) => {
-            keys[e.code] = true;
-            if(!gameStarted && (e.code === "Space" || e.code === "ArrowUp" || e.code === "ArrowDown")) {
-                gameStarted = true;
-            }
-            if(gameOver && e.code === "Space") {
-                resetGame();
-            }
-            if(e.code === "Space") e.preventDefault();
-        });
-        window.addEventListener("keyup", (e) => { keys[e.code] = false; });
-
-        // Mouse movement support
-        canvas.addEventListener("mousemove", (e) => {
-            if(!gameStarted) gameStarted = true;
-            let rect = canvas.getBoundingClientRect();
-            let mouseY = e.clientY - rect.top;
-            if(gameStarted && !gameOver) {
-                heli.y = mouseY - heli.h / 2;
+            if (e.code === "Space") {
+                isHolding = true;
+                if(!gameStarted) gameStarted = true;
+                if(gameOver) resetGame();
+                e.preventDefault();
             }
         });
-
-        canvas.addEventListener("click", () => {
-            if(!gameStarted) gameStarted = true;
-            else if(gameOver) resetGame();
+        window.addEventListener("keyup", (e) => {
+            if (e.code === "Space") isHolding = false;
         });
 
         function resetGame() {
-            heli.y = 225;
-            missiles = [];
-            stars = [];
+            heli.y = 200;
+            heli.vy = 0;
+            heli.cargoWeight = 1;
+            cargos = [];
             particles = [];
             score = 0;
             frameCount = 0;
             gameOver = false;
         }
 
-        function spawnMissile() {
-            let mY = Math.floor(Math.random() * (canvas.height - 80)) + 40;
-            missiles.push({
+        function spawnCargo() {
+            let weightVal = Math.floor(Math.random() * 3) + 1; // බර මට්ටම් 1 සිට 3 දක්වා
+            cargos.push({
                 x: canvas.width,
-                y: mY,
-                w: 40,
-                h: 14,
-                speed: 5 + Math.random() * 3
+                y: canvas.height - 60,
+                w: 30,
+                h: 30,
+                weight: weightVal
             });
         }
 
-        function spawnStar() {
-            let sY = Math.floor(Math.random() * (canvas.height - 80)) + 40;
-            stars.push({
-                x: canvas.width,
-                y: sY,
-                radius: 12
-            });
-        }
-
-        function createParticles(x, y, color) {
-            for (let i = 0; i < 8; i++) {
+        function createParticles(x, y, color, count = 8) {
+            for (let i = 0; i < count; i++) {
                 particles.push({
                     x: x,
                     y: y,
-                    vx: (Math.random() - 0.5) * 6,
-                    vy: (Math.random() - 0.5) * 6,
-                    radius: Math.random() * 3 + 1,
+                    vx: (Math.random() - 0.5) * 8,
+                    vy: (Math.random() - 0.5) * 8,
+                    radius: Math.random() * 4 + 1,
                     color: color,
                     alpha: 1
                 });
@@ -216,69 +197,66 @@
         }
 
         function update() {
-            if (!gameStarted || gameOver) return;
+            if (!gameStarted) return;
 
-            frameCount++;
-            heli.rotorAngle += 0.5;
+            if (!gameOver) {
+                frameCount++;
+                score = Math.floor(frameCount / 6);
 
-            // Keyboard movement
-            if ((keys["ArrowUp"] || keys["KeyW"]) && heli.y > 10) {
-                heli.y -= heli.speed;
-            }
-            if ((keys["ArrowDown"] || keys["KeyS"]) && heli.y < canvas.height - heli.h - 10) {
-                heli.y += heli.speed;
-            }
+                // බර වැඩි වෙද්දී හෙලිකොප්ටරයට උඩට යන්න අමාරු වෙනවා (Gravity වැඩි වෙනවා)
+                let effectiveGravity = heli.gravity + (heli.cargoWeight * 0.08);
 
-            // Boundary limit
-            if (heli.y < 10) heli.y = 10;
-            if (heli.y > canvas.height - heli.h - 10) heli.y = canvas.height - heli.h - 10;
-
-            // Spawn missiles and stars
-            if (frameCount % 80 === 0) spawnMissile();
-            if (frameCount % 60 === 0) spawnStar();
-
-            // Update Missiles
-            for (let i = missiles.length - 1; i >= 0; i--) {
-                missiles[i].x -= missiles[i].speed;
-
-                // Collision with Helicopter
-                if (
-                    heli.x < missiles[i].x + missiles[i].w &&
-                    heli.x + heli.w > missiles[i].x &&
-                    heli.y < missiles[i].y + missiles[i].h &&
-                    heli.y + heli.h > missiles[i].y
-                ) {
-                    gameOver = true;
-                    createParticles(heli.x + heli.w/2, heli.y + heli.h/2, "#ff0055");
-                }
-
-                if (missiles[i].x + missiles[i].w < 0) {
-                    missiles.splice(i, 1);
-                    score += 5; // survived missile
-                }
-            }
-
-            // Update Stars (Points)
-            for (let i = stars.length - 1; i >= 0; i--) {
-                stars[i].x -= 3.5;
-
-                let distX = (heli.x + heli.w/2) - stars[i].x;
-                let distY = (heli.y + heli.h/2) - stars[i].y;
-                let distance = Math.sqrt(distX * distX + distY * distY);
-
-                if (distance < heli.w/3 + stars[i].radius) {
-                    score += 20;
-                    createParticles(stars[i].x, stars[i].y, "#00f0ff");
-                    stars.splice(i, 1);
-                    if (score > highScore) {
-                        highScore = score;
-                        localStorage.setItem("chopperActionHighScore", highScore);
+                if (isHolding) {
+                    heli.vy += heli.lift;
+                    if(frameCount % 3 === 0) {
+                        createParticles(heli.x - 15, heli.y + 12, "#00f0ff", 3);
                     }
-                    continue;
+                } else {
+                    heli.vy += effectiveGravity;
                 }
 
-                if (stars[i].x + stars[i].radius < 0) {
-                    stars.splice(i, 1);
+                heli.y += heli.vy;
+                heli.rotorAngle += 0.4 + (heli.cargoWeight * 0.1);
+
+                // Spawn Cargo Boxes
+                if (frameCount % 90 === 0) {
+                    spawnCargo();
+                }
+
+                // Move and hook cargos
+                for (let i = cargos.length - 1; i >= 0; i--) {
+                    cargos[i].x -= 3;
+
+                    // හෙලිකොප්ටරය Cargo එක උඩින් යද්දී එකතු කරගන්නවා
+                    let distX = heli.x - cargos[i].x;
+                    let distY = (heli.y + heli.h) - cargos[i].y;
+                    
+                    if (Math.abs(distX) < 30 && Math.abs(distY) < 35) {
+                        heli.cargoWeight += cargos[i].weight; // බර වැඩි වෙනවා!
+                        createParticles(cargos[i].x, cargos[i].y, "#ffd700", 10);
+                        
+                        // බර සීමාව (Max Weight Limit) 5 පැනිය හැකිනම් මෙතනදී පුපුරලා යනවා!
+                        if (heli.cargoWeight > 5) {
+                            gameOver = true;
+                            createParticles(heli.x, heli.y, "#ff0055", 25); // මාර විදිහට පුපුරලා යනවා
+                        }
+
+                        cargos.splice(i, 1);
+                        score += 30;
+                    } else if (cargos[i] && cargos[i].x + cargos[i].w < 0) {
+                        cargos.splice(i, 1);
+                    }
+                }
+
+                // බිම හෝ වහලේ වැදුනොත් හෝ ඕනෑවට වඩා බර උස්සලා හැප්පුනොත්
+                if (heli.y - heli.h / 2 < 0 || heli.y + heli.h / 2 > canvas.height) {
+                    gameOver = true;
+                    createParticles(heli.x, heli.y, "#ff0055", 20);
+                }
+
+                if (score > highScore) {
+                    highScore = score;
+                    localStorage.setItem("cargoChopperHighScore", highScore);
                 }
             }
 
@@ -304,58 +282,60 @@
                 ctx.beginPath(); ctx.moveTo(0, i); ctx.lineTo(canvas.width, i); ctx.stroke();
             }
 
-            // Draw Stars
-            stars.forEach(s => {
+            // Draw Cargo Boxes on Ground
+            cargos.forEach(c => {
                 ctx.save();
-                ctx.shadowBlur = 15;
-                ctx.shadowColor = "#00f0ff";
-                ctx.fillStyle = "#00f0ff";
-                ctx.beginPath();
-                ctx.arc(s.x, s.y, s.radius, 0, Math.PI * 2);
-                ctx.fill();
+                ctx.shadowBlur = 10;
+                ctx.shadowColor = "#ffd700";
+                ctx.fillStyle = c.weight > 2 ? "#ff0055" : "#ffd700";
+                ctx.fillRect(c.x, c.y, c.w, c.h);
+                ctx.fillStyle = "#000";
+                ctx.font = "bold 12px 'Rajdhani'";
+                ctx.fillText("+" + c.weight + "T", c.x + 6, c.y + 20);
                 ctx.restore();
             });
 
-            // Draw Missiles
-            missiles.forEach(m => {
-                ctx.save();
-                ctx.shadowBlur = 15;
-                ctx.shadowColor = "#ff0055";
-                ctx.fillStyle = "#ff0055";
-                ctx.fillRect(m.x, m.y, m.w, m.h);
-                // Missile head flame
-                ctx.fillStyle = "#ffff00";
-                ctx.fillRect(m.x + m.w, m.y + 3, 8, 8);
-                ctx.restore();
-            });
-
-            // Draw Detailed Helicopter
+            // Draw Helicopter & Hanging Cargo Chain
             if (!gameOver || Math.floor(Date.now() / 100) % 2 === 0) {
                 ctx.save();
                 ctx.translate(heli.x, heli.y);
 
                 // Body
                 ctx.shadowBlur = 15;
-                ctx.shadowColor = "#00f0ff";
-                ctx.fillStyle = "#00f0ff";
-                ctx.fillRect(0, 0, heli.w, heli.h);
+                ctx.shadowColor = heli.cargoWeight > 4 ? "#ff0055" : "#00f0ff";
+                ctx.fillStyle = heli.cargoWeight > 4 ? "#ff0055" : "#00f0ff";
+                ctx.fillRect(-heli.w / 2, -heli.h / 2, heli.w, heli.h);
 
-                // Cockpit
-                ctx.fillStyle = "#ff0055";
-                ctx.fillRect(35, 4, 18, heli.h - 8);
+                // Cockpit Glass
+                ctx.fillStyle = "#ffffff";
+                ctx.fillRect(5, -heli.h / 2 + 3, 15, heli.h - 6);
 
                 // Tail
-                ctx.fillStyle = "#00f0ff";
-                ctx.fillRect(-20, 10, 20, 6);
+                ctx.fillStyle = heli.cargoWeight > 4 ? "#ff0055" : "#00f0ff";
+                ctx.fillRect(-heli.w / 2 - 18, -4, 18, 6);
 
-                // Rotor Blade
+                // Rotor Blades (Faster when overloaded)
                 ctx.fillStyle = "#ffffff";
                 ctx.shadowBlur = 10;
                 ctx.shadowColor = "#ffffff";
                 ctx.beginPath();
-                let bladeW = Math.cos(heli.rotorAngle) * 45;
-                ctx.rect(heli.w / 2 - bladeW / 2, -6, bladeW, 4);
+                let bladeWidth = Math.cos(heli.rotorAngle) * 36;
+                ctx.rect(-bladeWidth / 2, -heli.h / 2 - 8, bladeWidth, 4);
                 ctx.fill();
+
+                // Hanging Cargo Load Line if carrying weight
+                if(heli.cargoWeight > 1) {
+                    ctx.strokeStyle = "#ffd700";
+                    ctx.lineWidth = 2;
+                    ctx.beginPath();
+                    ctx.moveTo(0, heli.h / 2);
+                    ctx.lineTo(0, heli.h / 2 + 25);
+                    ctx.stroke();
+
+                    // Hanging Box
+                    ctx.fillStyle = "#ffd700";
+                    ctx.fillRect(-10, heli.h / 2 + 25, 20, 20);
+                }
 
                 ctx.restore();
             }
@@ -377,8 +357,8 @@
             ctx.fillStyle = "#ffffff";
             ctx.font = "bold 20px 'Rajdhani', sans-serif";
             ctx.fillText("SCORE: " + score, 20, 35);
-            ctx.fillStyle = "#00f0ff";
-            ctx.fillText("HIGH SCORE: " + highScore, 20, 60);
+            ctx.fillStyle = "#ffd700";
+            ctx.fillText("CARGO WEIGHT: " + (heli.cargoWeight - 1) * 2 + " Tons", 20, 60);
 
             // Overlays
             if (!gameStarted) {
@@ -389,10 +369,10 @@
                 ctx.textAlign = "center";
                 ctx.shadowBlur = 15;
                 ctx.shadowColor = "#00f0ff";
-                ctx.fillText("NEON CHOPPER: SKY BATTLE", canvas.width / 2, canvas.height / 2 - 20);
+                ctx.fillText("HEAVY CARGO CHOPPER", canvas.width / 2, canvas.height / 2 - 20);
                 ctx.fillStyle = "#ffffff";
                 ctx.font = "18px 'Outfit', sans-serif";
-                ctx.fillText("Move Mouse or Arrows to Start", canvas.width / 2, canvas.height / 2 + 25);
+                ctx.fillText("Click or Press Spacebar to Start", canvas.width / 2, canvas.height / 2 + 25);
                 ctx.textAlign = "left";
                 ctx.shadowBlur = 0;
             } else if (gameOver) {
@@ -403,11 +383,11 @@
                 ctx.textAlign = "center";
                 ctx.shadowBlur = 20;
                 ctx.shadowColor = "#ff0055";
-                ctx.fillText("MISSION FAILED!", canvas.width / 2, canvas.height / 2 - 20);
+                ctx.fillText("OVERLOAD EXPLOSION! CRASHED!", canvas.width / 2, canvas.height / 2 - 20);
                 ctx.fillStyle = "#00f0ff";
                 ctx.font = "18px 'Outfit', sans-serif";
-                ctx.fillText("Press Spacebar to Try Again", canvas.width / 2, canvas.height / 2 + 25);
-                ctx.textAlign, "left";
+                ctx.fillText("Click or Press Spacebar to Try Again", canvas.width / 2, canvas.height / 2 + 25);
+                ctx.textAlign = "left";
                 ctx.shadowBlur = 0;
             }
         }
