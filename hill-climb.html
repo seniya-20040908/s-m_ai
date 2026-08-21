@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cyber Hill Climb - AI Games Hub</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: #0b0f19;
+            color: #ffffff;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        header {
+            width: 100%;
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(15, 23, 42, 0.8);
+            border-bottom: 1px solid #1e293b;
+        }
+
+        .back-btn {
+            background: transparent;
+            border: 2px solid #00f0ff;
+            color: #00f0ff;
+            padding: 8px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            text-decoration: none;
+            font-weight: bold;
+            transition: 0.3s;
+        }
+
+        .back-btn:hover {
+            background: #00f0ff;
+            color: #0b0f19;
+            box-shadow: 0 0 15px rgba(0, 240, 255, 0.5);
+        }
+
+        h1 {
+            font-size: 1.8rem;
+            background: linear-gradient(45deg, #00f0ff, #7000ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .game-container {
+            margin-top: 30px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background: #111827;
+            padding: 20px;
+            border-radius: 16px;
+            border: 1px solid #1f2937;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+
+        canvas {
+            background: linear-gradient(to bottom, #020617, #1e1b4b);
+            border-radius: 12px;
+            border: 2px solid #374151;
+            box-shadow: inset 0 0 20px rgba(0,0,0,0.8);
+        }
+
+        .controls-info {
+            margin-top: 15px;
+            text-align: center;
+            color: #9ca3af;
+            font-size: 0.95rem;
+        }
+
+        .controls-info span {
+            color: #00f0ff;
+            font-weight: bold;
+            background: #1f2937;
+            padding: 4px 8px;
+            border-radius: 4px;
+            margin: 0 3px;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <a href="games.html" class="back-btn">&#8592; Back to Hub</a>
+        <h1>Cyber Hill Climb</h1>
+        <div style="width: 100px;"></div> <!-- Spacer for centering -->
+    </header>
+
+    <div class="game-container">
+        <canvas id="gameCanvas" width="800" height="450"></canvas>
+        <div class="controls-info">
+            Controls: Use <span>RIGHT / LEFT Arrow keys</span> to tilt/drive, and <span>SPACEBAR</span> to restart!
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById("gameCanvas");
+        const ctx = canvas.getContext("2d");
+
+        // Game Variables
+        let score = 0;
+        let gameOver = false;
+        let cameraX = 0;
+
+        // Car Object
+        let car = {
+            x: 100,
+            y: 200,
+            vx: 0,
+            vy: 0,
+            angle: 0,
+            width: 50,
+            height: 25,
+            power: 0.2,
+            gravity: 0.25,
+            friction: 0.98
+        };
+
+        // Input Tracking
+        let keys = {};
+        window.addEventListener("keydown", (e) => {
+            keys[e.code] = true;
+            if (e.code === "Space" && gameOver) {
+                resetGame();
+            }
+        });
+        window.addEventListener("keyup", (e) => {
+            keys[e.code] = false;
+        });
+
+        // Generate Terrain points using math waves (Hill shapes)
+        let terrain = [];
+        for (let i = 0; i < 2000; i++) {
+            let height = 300 + Math.sin(i * 0.03) * 60 + Math.cos(i * 0.01) * 100;
+            terrain.push({ x: i * 15, y: height });
+        }
+
+        function getTerrainHeight(x) {
+            let index = Math.floor(x / 15);
+            if (index < 0) return terrain[0].y;
+            if (index >= terrain.length - 1) return terrain[terrain.length - 1].y;
+            
+            let p1 = terrain[index];
+            let p2 = terrain[index + 1];
+            let t = (x - p1.x) / (p2.x - p1.x);
+            return p1.y + t * (p2.y - p1.y);
+        }
+
+        function resetGame() {
+            car.x = 100;
+            car.y = 200;
+            car.vx = 0;
+            car.vy = 0;
+            car.angle = 0;
+            cameraX = 0;
+            score = 0;
+            gameOver = false;
+        }
+
+        function update() {
+            if (!gameOver) {
+                // Controls
+                if (keys["ArrowRight"]) {
+                    car.vx += car.power;
+                }
+                if (keys["ArrowLeft"]) {
+                    car.vx -= car.power * 0.5;
+                }
+
+                // Physics
+                car.vy += car.gravity;
+                car.vx *= car.friction;
+                car.x += car.vx;
+
+                let groundY = getTerrainHeight(car.x);
+
+                // Check collision with ground
+                if (car.y >= groundY - 15) {
+                    car.y = groundY - 15;
+                    car.vy = 0;
+                    
+                    // Simple angle adjustment based on slope
+                    let nextGroundY = getTerrainHeight(car.x + 10);
+                    let slope = (nextGroundY - groundY) / 10;
+                    car.angle = Math.atan(slope);
+
+                    // Hill climb boost when going right
+                    if (keys["ArrowRight"] && car.vx > 0) {
+                        car.vy = -slope * car.vx * 0.5;
+                    }
+                } else {
+                    car.y += car.vy;
+                    // Rotate in air if keys pressed
+                    if (keys["ArrowRight"]) car.angle += 0.05;
+                    if (keys["ArrowLeft"]) car.angle -= 0.05;
+                }
+
+                // Camera follow
+                cameraX = car.x - 200;
+
+                // Score update based on distance
+                score = Math.floor(car.x / 10);
+
+                // Game Over Condition (Crash / Flip over)
+                if (Math.abs(car.angle) > 1.8) {
+                    gameOver = true;
+                }
+            }
+        }
+
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            ctx.save();
+            ctx.translate(-cameraX, 0);
+
+            // Draw Terrain
+            ctx.beginPath();
+            ctx.moveTo(terrain[0].x, canvas.height);
+            for (let i = 0; i < terrain.length; i++) {
+                ctx.lineTo(terrain[i].x, terrain[i].y);
+            }
+            ctx.lineTo(terrain[terrain.length - 1].x, canvas.height);
+            ctx.fillStyle = "#1e293b";
+            ctx.fill();
+            ctx.lineWidth = 3;
+            ctx.strokeStyle = "#00f0ff";
+            ctx.stroke();
+
+            // Draw Car
+            ctx.save();
+            ctx.translate(car.x, car.y);
+            ctx.rotate(car.angle);
+
+            // Car Body
+            ctx.fillStyle = "#ff0055";
+            ctx.fillRect(-car.width / 2, -car.height, car.width, car.height);
+            ctx.fillStyle = "#00f0ff";
+            ctx.fillRect(-car.width / 4, -car.height - 10, car.width / 2, 10);
+
+            // Wheels
+            ctx.beginPath();
+            ctx.arc(-car.width / 3, 0, 8, 0, Math.PI * 2);
+            ctx.arc(car.width / 3, 0, 8, 0, Math.PI * 2);
+            ctx.fillStyle = "#ffffff";
+            ctx.fill();
+
+            ctx.restore();
+            ctx.restore();
+
+            // Draw UI (Score & Game Over text)
+            ctx.fillStyle = "#ffffff";
+            ctx.font = "20px 'Segoe UI', sans-serif";
+            ctx.fillText("Score: " + score, 20, 35);
+
+            if (gameOver) {
+                ctx.fillStyle = "rgba(0, 0, 0, 0.7)";
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+                ctx.fillStyle = "#ff0055";
+                ctx.font = "bold 35px 'Segoe UI', sans-serif";
+                ctx.textAlign = "center";
+                ctx.fillText("CRASHED!", canvas.width / 2, canvas.height / 2 - 20);
+
+                ctx.fillStyle = "#00f0ff";
+                ctx.font = "18px 'Segoe UI', sans-serif";
+                ctx.fillText("Press SPACEBAR to Restart", canvas.width / 2, canvas.height / 2 + 20);
+                ctx.textAlign = "left"; // reset
+            }
+        }
+
+        function loop() {
+            update();
+            draw();
+            requestAnimationFrame(loop);
+        }
+
+        loop();
+    </script>
+</body>
+</html>
