@@ -2,14 +2,13 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Pro Cargo Chopper</title>
+    <title>Pro Cargo Chopper - Enhanced</title>
     <style>
         body { background: #030712; color: #fff; margin: 0; display: flex; justify-content: center; align-items: center; height: 100vh; font-family: 'Rajdhani', sans-serif; }
-        canvas { background: radial-gradient(circle, #1e293b, #090e1a); border: 2px solid #334155; border-radius: 12px; }
-        .ui-panel { position: absolute; top: 20px; left: 20px; text-align: center; }
-        /* රවුම් මීටරය සඳහා CSS */
-        .gauge-container { position: relative; width: 120px; height: 120px; background: #0f172a; border-radius: 50%; border: 4px solid #334155; }
-        #needle { position: absolute; top: 50%; left: 50%; width: 4px; height: 50px; background: #ff0055; transform-origin: bottom; transform: rotate(-90deg); transition: 0.3s; }
+        canvas { background: linear-gradient(180deg, #0f172a 0%, #1e293b 100%); border: 3px solid #334155; border-radius: 15px; box-shadow: 0 0 20px rgba(0, 240, 255, 0.2); }
+        .ui-panel { position: absolute; top: 30px; left: 30px; text-align: center; }
+        .gauge-container { position: relative; width: 140px; height: 140px; background: #0f172a; border-radius: 50%; border: 6px solid #1e293b; box-shadow: inset 0 0 10px #000; }
+        #needle { position: absolute; top: 50%; left: 50%; width: 6px; height: 60px; background: #00f0ff; transform-origin: bottom center; transform: rotate(-90deg); transition: 0.1s ease-out; border-radius: 3px; }
     </style>
 </head>
 <body>
@@ -18,7 +17,7 @@
     <div class="gauge-container">
         <div id="needle"></div>
     </div>
-    <div style="margin-top: 10px; font-weight: bold; color: #00f0ff;">CAPACITY</div>
+    <div style="margin-top: 10px; font-weight: bold; color: #00f0ff;">LOAD CAPACITY</div>
 </div>
 
 <canvas id="gameCanvas" width="800" height="450"></canvas>
@@ -27,31 +26,30 @@
     const canvas = document.getElementById("gameCanvas");
     const ctx = canvas.getContext("2d");
 
-    let heli = { x: 100, y: 225, vy: 0, weight: 0, maxCapacity: 100 };
+    let heli = { x: 100, y: 225, vy: 0, weight: 0, maxCapacity: 100, rotorAngle: 0 };
     let items = [];
     let gameOver = false;
 
-    // Needle rotation (Gauge -90deg to +90deg)
     function updateGauge() {
         let percent = (heli.weight / heli.maxCapacity) * 180;
-        document.getElementById('needle').style.transform = `rotate(${percent - 90}deg)`;
-        if(heli.weight > heli.maxCapacity) document.getElementById('needle').style.background = "#ff0055";
-        else document.getElementById('needle').style.background = "#00f0ff";
+        let needle = document.getElementById('needle');
+        needle.style.transform = `rotate(${percent - 90}deg)`;
+        needle.style.background = (heli.weight > heli.maxCapacity * 0.8) ? "#ff0055" : "#00f0ff";
     }
 
     function update() {
         if(gameOver) return;
-        heli.vy += 0.15; // Gravity
+        heli.vy += 0.15;
         heli.y += heli.vy;
+        heli.rotorAngle += 0.5;
         
-        // Spawn Items
-        if(Math.random() < 0.02) {
-            items.push({ x: 800, y: Math.random()*400, type: Math.random() > 0.5 ? 'cargo' : 'boost', val: 15 });
+        if(Math.random() < 0.015) {
+            items.push({ x: 800, y: Math.random()*350 + 50, type: Math.random() > 0.4 ? 'cargo' : 'boost', val: 15 });
         }
 
         items.forEach((item, index) => {
-            item.x -= 4;
-            if(Math.hypot(item.x - heli.x, item.y - heli.y) < 30) {
+            item.x -= 3;
+            if(Math.hypot(item.x - heli.x, item.y - heli.y) < 40) {
                 if(item.type === 'cargo') heli.weight += item.val;
                 else heli.maxCapacity += item.val;
                 items.splice(index, 1);
@@ -64,14 +62,39 @@
 
     function draw() {
         ctx.clearRect(0, 0, 800, 450);
-        // Helicopter
+        
+        // Draw Helicopter (Detailed)
+        ctx.save();
+        ctx.translate(heli.x, heli.y);
         ctx.fillStyle = "#00f0ff";
-        ctx.fillRect(heli.x, heli.y, 40, 20);
-        // Items
+        ctx.fillRect(-20, -10, 40, 20); // Body
+        ctx.fillStyle = "#fff";
+        ctx.fillRect(10, -8, 10, 10);   // Cockpit
+        ctx.fillStyle = "#ff0055";
+        ctx.fillRect(-25, -2, 10, 4);    // Tail
+        
+        // Rotor
+        ctx.strokeStyle = "#fff";
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.moveTo(-20, -15);
+        ctx.lineTo(20, -15);
+        ctx.stroke();
+        ctx.restore();
+
+        // Draw Items
         items.forEach(i => {
             ctx.fillStyle = i.type === 'cargo' ? '#ffd700' : '#00f0ff';
-            ctx.fillRect(i.x, i.y, 25, 25);
+            ctx.fillRect(i.x, i.y, 30, 30);
+            ctx.strokeStyle = "#000";
+            ctx.strokeRect(i.x, i.y, 30, 30);
         });
+
+        if(gameOver) {
+            ctx.fillStyle = "rgba(255,0,0,0.5)";
+            ctx.fillRect(0,0,800,450);
+        }
+        
         requestAnimationFrame(() => { update(); draw(); });
     }
 
