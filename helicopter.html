@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cyber Helicopter - Pro Edition</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Rajdhani:wght@500;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #030712;
+            --card-bg: #0f172a;
+            --accent-cyan: #00f0ff;
+            --accent-pink: #ff0055;
+            --text-main: #f8fafc;
+            --border-color: rgba(0, 240, 255, 0.3);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Outfit', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            overflow: hidden;
+        }
+
+        header {
+            position: absolute;
+            top: 15px;
+            width: 90%;
+            max-width: 800px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(15, 23, 42, 0.8);
+            backdrop-filter: blur(10px);
+            padding: 10px 20px;
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            z-index: 10;
+        }
+
+        h1 {
+            font-size: 1.3rem;
+            font-family: 'Rajdhani', sans-serif;
+            background: linear-gradient(45deg, var(--accent-cyan), var(--accent-pink));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .back-btn {
+            color: var(--accent-cyan);
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.9rem;
+            border: 1px solid var(--border-color);
+            padding: 4px 10px;
+            border-radius: 6px;
+            transition: 0.3s;
+        }
+
+        .back-btn:hover {
+            background: var(--accent-cyan);
+            color: #000;
+        }
+
+        .game-container {
+            position: relative;
+            background: var(--card-bg);
+            padding: 12px;
+            border-radius: 18px;
+            border: 2px solid var(--border-color);
+            box-shadow: 0 0 40px rgba(0, 240, 255, 0.15);
+        }
+
+        canvas {
+            background: radial-gradient(circle at center, #1e1b4b 0%, #090d16 100%);
+            border-radius: 12px;
+            display: block;
+            cursor: pointer;
+        }
+
+        .controls-hint {
+            margin-top: 10px;
+            text-align: center;
+            color: #94a3b8;
+            font-size: 0.85rem;
+        }
+
+        .controls-hint span {
+            color: var(--accent-cyan);
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <a href="games.html" class="back-btn">&#8592; Back</a>
+        <h1>Neon Chopper 3D-Look</h1>
+        <div style="width: 50px;"></div>
+    </header>
+
+    <div class="game-container">
+        <canvas id="gameCanvas" width="800" height="450"></canvas>
+        <div class="controls-hint">
+            <span>HOLD LEFT-CLICK</span> or <span>SPACEBAR</span> to Fly Up | Release to Fall Down
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById("gameCanvas");
+        const ctx = canvas.getContext("2d");
+
+        let score = 0;
+        let highScore = localStorage.getItem("chopperHighScore") || 0;
+        let gameOver = false;
+        let gameStarted = false;
+
+        // Helicopter Properties
+        let heli = {
+            x: 120,
+            y: 225,
+            w: 55,
+            h: 26,
+            vy: 0,
+            lift: -0.38,
+            gravity: 0.24,
+            rotorAngle: 0
+        };
+
+        let obstacles = [];
+        let particles = [];
+        let frameCount = 0;
+
+        // Controls
+        let isHolding = false;
+        window.addEventListener("mousedown", () => { isHolding = true; if(!gameStarted) gameStarted = true; if(gameOver) resetGame(); });
+        window.addEventListener("mouseup", () => { isHolding = false; });
+        window.addEventListener("keydown", (e) => {
+            if (e.code === "Space") {
+                isHolding = true;
+                if(!gameStarted) gameStarted = true;
+                if(gameOver) resetGame();
+                e.preventDefault();
+            }
+        });
+        window.addEventListener("keyup", (e) => {
+            if (e.code === "Space") isHolding = false;
+        });
+
+        function resetGame() {
+            heli.y = 225;
+            heli.vy = 0;
+            obstacles = [];
+            particles = [];
+            score = 0;
+            frameCount = 0;
+            gameOver = false;
+        }
+
+        // Spawn Caves / Obstacles
+        function spawnObstacles() {
+            let gapHeight = 150; // Opening size
+            let minTop = 50;
+            let maxTop = canvas.height - gapHeight - 80;
+            let topHeight = Math.floor(Math.random() * (maxTop - minTop + 1)) + minTop;
+
+            obstacles.push({
+                x: canvas.width,
+                top: topHeight,
+                bottom: canvas.height - (topHeight + gapHeight),
+                width: 50,
+                passed: false
+            });
+        }
+
+        function createParticles(x, y, color) {
+            for (let i = 0; i < 6; i++) {
+                particles.push({
+                    x: x,
+                    y: y,
+                    vx: (Math.random() - 0.5) * 6,
+                    vy: (Math.random() - 0.5) * 6,
+                    radius: Math.random() * 3 + 1,
+                    color: color,
+                    alpha: 1
+                });
+            }
+        }
+
+        function update() {
+            if (!gameStarted) return;
+
+            if (!gameOver) {
+                frameCount++;
+                score = Math.floor(frameCount / 10);
+
+                if (isHolding) {
+                    heli.vy += heli.lift;
+                    // Sparkles under chopper
+                    if(frameCount % 3 === 0) {
+                        createParticles(heli.x - 15, heli.y + 12, "#00f0ff");
+                    }
+                } else {
+                    heli.vy += heli.gravity;
+                }
+
+                heli.y += heli.vy;
+                heli.rotorAngle += 0.4;
+
+                // Spawn obstacle every 90 frames
+                if (frameCount % 90 === 0) {
+                    spawnObstacles();
+                }
+
+                // Move obstacles
+                for (let i = obstacles.length - 1; i >= 0; i--) {
+                    obstacles[i].x -= 4;
+
+                    // Collision Detection
+                    if (
+                        heli.x + heli.w / 2 > obstacles[i].x &&
+                        heli.x - heli.w / 2 < obstacles[i].x + obstacles[i].width &&
+                        (heli.y - heli.h / 2 < obstacles[i].top || heli.y + heli.h / 2 > canvas.height - obstacles[i].bottom)
+                    ) {
+                        gameOver = true;
+                        createParticles(heli.x, heli.y, "#ff0055");
+                        if (score > highScore) {
+                            highScore = score;
+                            localStorage.setItem("chopperHighScore", highScore);
+                        }
+                    }
+
+                    // Remove off-screen obstacles
+                    if (obstacles[i].x + obstacles[i].width < 0) {
+                        obstacles.splice(i, 1);
+                    }
+                }
+
+                // Boundary check (Floor & Roof)
+                if (heli.y - heli.h / 2 < 10 || heli.y + heli.h / 2 > canvas.height - 10) {
+                    gameOver = true;
+                    createParticles(heli.x, heli.y, "#ff0055");
+                }
+            }
+
+            // Update particles
+            particles.forEach((p, index) => {
+                p.x += p.vx;
+                p.y += p.vy;
+                p.alpha -= 0.03;
+                if (p.alpha <= 0) particles.splice(index, 1);
+            });
+        }
+
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Draw Background Cyber Grid Lines
+            ctx.strokeStyle = "rgba(0, 240, 255, 0.03)";
+            ctx.lineWidth = 1;
+            for (let i = 0; i < canvas.width; i += 40) {
+                ctx.beginPath(); ctx.moveTo(i, 0); ctx.lineTo(i, canvas.height); ctx.stroke();
+            }
+            for (let i = 0; i < canvas.height; i += 40) {
+                ctx.beginPath(); ctx.moveTo(0, i); ctx.lineTo(canvas.width, i); ctx.stroke();
+            }
+
+            // Draw Obstacles (Neon Cave Walls)
+            obstacles.forEach(obs => {
+                ctx.shadowBlur = 15;
+                ctx.shadowColor = "#00f0ff";
+                ctx.fillStyle = "#0f172a";
+                ctx.strokeStyle = "#00f0ff";
+                ctx.lineWidth = 2;
+
+                // Top Wall
+                ctx.fillRect(obs.x, 0, obs.width, obs.top);
+                ctx.strokeRect(obs.x, 0, obs.width, obs.top);
+
+                // Bottom Wall
+                ctx.fillRect(obs.x, canvas.height - obs.bottom, obs.width, obs.bottom);
+                ctx.strokeRect(obs.x, canvas.height - obs.bottom, obs.width, obs.bottom);
+                ctx.shadowBlur = 0;
+            });
+
+            // Draw Helicopter
+            if (!gameOver || Math.floor(Date.now() / 100) % 2 === 0) {
+                ctx.save();
+                ctx.translate(heli.x, heli.y);
+
+                // Chopper Body
+                ctx.shadowBlur = 15;
+                ctx.shadowColor = "#ff0055";
+                ctx.fillStyle = "#ff0055";
+                ctx.fillRect(-heli.w / 2, -heli.h / 2, heli.w, heli.h);
+
+                // Cockpit Glass
+                ctx.fillStyle = "#00f0ff";
+                ctx.fillRect(5, -heli.h / 2 + 3, 15, heli.h - 6);
+
+                // Tail
+                ctx.fillStyle = "#ff0055";
+                ctx.fillRect(-heli.w / 2 - 18, -4, 18, 6);
+
+                // Rotor Blades (Spinning Animation)
+                ctx.fillStyle = "#ffffff";
+                ctx.shadowBlur = 10;
+                ctx.shadowColor = "#ffffff";
+                ctx.beginPath();
+                let bladeWidth = Math.cos(heli.rotorAngle) * 36;
+                ctx.rect(-bladeWidth / 2, -heli.h / 2 - 8, bladeWidth, 4);
+                ctx.fill();
+
+                ctx.restore();
+            }
+
+            // Draw Particles
+            particles.forEach(p => {
+                ctx.save();
+                ctx.globalAlpha = Math.max(p.alpha, 0);
+                ctx.fillStyle = p.color;
+                ctx.shadowBlur = 8;
+                ctx.shadowColor = p.color;
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.restore();
+            });
+
+            // UI Texts
+            ctx.fillStyle = "#ffffff";
+            ctx.font = "bold 20px 'Rajdhani', sans-serif";
+            ctx.fillText("SCORE: " + score, 20, 35);
+            ctx.fillStyle = "#00f0ff";
+            ctx.fillText("HIGH SCORE: " + highScore, 20, 60);
+
+            // Start / Game Over Screens
+            if (!gameStarted) {
+                ctx.fillStyle = "rgba(3, 7, 18, 0.85)";
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                ctx.fillStyle = "#00f0ff";
+                ctx.font = "bold 32px 'Rajdhani', sans-serif";
+                ctx.textAlign = "center";
+                ctx.shadowBlur = 15;
+                ctx.shadowColor = "#00f0ff";
+                ctx.fillText("NEON CHOPPER PRO", canvas.width / 2, canvas.height / 2 - 20);
+                ctx.fillStyle = "#ffffff";
+                ctx.font = "18px 'Outfit', sans-serif";
+                ctx.fillText("Click or Press Spacebar to Start", canvas.width / 2, canvas.height / 2 + 25);
+                ctx.textAlign = "left";
+                ctx.shadowBlur = 0;
+            } else if (gameOver) {
+                ctx.fillStyle = "rgba(3, 7, 18, 0.85)";
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                ctx.fillStyle = "#ff0055";
+                ctx.font = "bold 34px 'Rajdhani', sans-serif";
+                ctx.textAlign = "center";
+                ctx.shadowBlur = 20;
+                ctx.shadowColor = "#ff0055";
+                ctx.fillText("CRASHED!", canvas.width / 2, canvas.height / 2 - 20);
+                ctx.fillStyle = "#00f0ff";
+                ctx.font = "18px 'Outfit', sans-serif";
+                ctx.fillText("Click or Press Spacebar to Try Again", canvas.width / 2, canvas.height / 2 + 25);
+                ctx.textAlign = "left";
+                ctx.shadowBlur = 0;
+            }
+        }
+
+        function loop() {
+            update();
+            draw();
+            requestAnimationFrame(loop);
+        }
+
+        loop();
+    </script>
+</body>
+</html>
