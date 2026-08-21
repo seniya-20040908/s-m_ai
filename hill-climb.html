@@ -230,7 +230,7 @@
         <div class="game-container" id="gameBox">
             <canvas id="gameCanvas" width="760" height="420"></canvas>
             <div class="controls-info">
-                <span>Arrows</span>: Drive & Balance | <span>SPACE</span>: Restart
+                <span>Arrows</span>: Drive/Brake | <span>SPACE</span>: Restart
                 <button class="fullscreen-btn" onclick="toggleFullScreen()">Full Screen ⛶</button>
             </div>
         </div>
@@ -261,20 +261,18 @@
         let cameraY = 0;
         let explosionParticles = [];
 
-        // Upgrades level (Gyro removed completely)
         let upgrades = {
             engine: { level: 1, cost: 20 },
             tires: { level: 1, cost: 15 }
         };
 
-        // Car Object - Increased length (width: 90 instead of 55)
         let car = {
             x: 100,
             y: 200,
             vx: 0,
             vy: 0,
             angle: 0,
-            width: 90,   // වැඩි කළ දිග (Longer vehicle body)
+            width: 90,
             height: 26,
             power: 0.20,
             gravity: 0.28,
@@ -292,7 +290,6 @@
             keys[e.code] = false;
         });
 
-        // Endless Dynamic Terrain Generation System
         let terrain = [];
         let coinList = [];
         let generatedLength = 0;
@@ -414,11 +411,27 @@
 
         function update() {
             if (!gameOver) {
+                // Driving & Brake System
                 if (keys["ArrowRight"]) {
-                    car.vx += car.power;
+                    if (car.vx < 0) {
+                        // Moving left, but pressing Right -> BRAKE!
+                        car.vx *= 0.85; 
+                    } else {
+                        car.vx += car.power; // Accelerate Forward
+                    }
                 }
                 if (keys["ArrowLeft"]) {
-                    car.vx -= car.power * 0.6;
+                    if (car.vx > 0) {
+                        // Moving right (forward), but pressing Left -> BRAKE / REVERSE!
+                        car.vx *= 0.80; // Sharp Brake effect
+                        
+                        // WARNING: If speed is too high and user slams brake, momentum tips the car forward/over!
+                        if (car.vx > 4.5 && car.y >= getTerrainHeight(car.x) - 15) {
+                            car.angle -= 0.12; // Weight transfers forward and flips!
+                        }
+                    } else {
+                        car.vx -= car.power * 0.6; // Moving backward
+                    }
                 }
 
                 car.vy += car.gravity;
@@ -442,7 +455,6 @@
                     }
                 } else {
                     car.y += car.vy;
-                    // In-air rotation physics (Very sensitive since vehicle is long and no auto-balance!)
                     if (keys["ArrowRight"]) car.angle += 0.07;
                     if (keys["ArrowLeft"]) car.angle -= 0.07;
                 }
@@ -465,7 +477,7 @@
                     }
                 });
 
-                // CRASH CONDITION: Without auto-balance, long body easily flips and crashes!
+                // CRASH CONDITION: If angle flips too much or brake causes a front-flip crash
                 if (Math.abs(car.angle) > 1.45) {
                     triggerExplosion(car.x, car.y);
                 }
@@ -523,24 +535,21 @@
                 }
             });
 
-            // Draw Longer Car / Explosion
+            // Draw Car / Explosion
             if (!gameOver) {
                 ctx.save();
                 ctx.translate(car.x, car.y);
                 ctx.rotate(car.angle);
 
-                // Longer Chassis
                 ctx.fillStyle = "#ff0055";
                 ctx.shadowBlur = 12;
                 ctx.shadowColor = "#ff0055";
                 ctx.fillRect(-car.width / 2, -car.height, car.width, car.height - 6);
                 
-                // Cabin / Windshield
                 ctx.fillStyle = "#00f0ff";
                 ctx.fillRect(-car.width / 5, -car.height - 10, car.width / 2.5, 10);
                 ctx.shadowBlur = 0;
 
-                // Wheels (Spread further apart due to long body)
                 ctx.beginPath();
                 ctx.arc(-car.width / 2.5, 4, 10, 0, Math.PI * 2);
                 ctx.arc(car.width / 2.5, 4, 10, 0, Math.PI * 2);
