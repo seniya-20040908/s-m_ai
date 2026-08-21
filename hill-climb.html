@@ -1,20 +1,31 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cyber Hill Climb - AI Games Hub</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Rajdhani:wght@500;700;800&display=swap" rel="stylesheet">
     <style>
+        :root {
+            --bg-color: #070a0f;
+            --card-bg: #0f172a;
+            --accent-cyan: #00f0ff;
+            --accent-purple: #7000ff;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --border-color: rgba(0, 240, 255, 0.2);
+        }
+
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: 'Outfit', sans-serif;
         }
 
         body {
-            background-color: #0b0f19;
-            color: #ffffff;
+            background-color: var(--bg-color);
+            color: var(--text-main);
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -24,89 +35,158 @@
 
         header {
             width: 100%;
-            padding: 20px;
+            padding: 1rem 5%;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            background: rgba(15, 23, 42, 0.8);
-            border-bottom: 1px solid #1e293b;
+            border-bottom: 1px solid var(--border-color);
+            background: var(--card-bg);
+            max-width: 1000px;
+            margin: 10px auto;
+            border-radius: 12px;
         }
 
         .back-btn {
-            background: transparent;
-            border: 2px solid #00f0ff;
-            color: #00f0ff;
-            padding: 8px 16px;
-            border-radius: 8px;
-            cursor: pointer;
+            color: var(--accent-cyan);
             text-decoration: none;
-            font-weight: bold;
+            font-weight: 600;
+            border: 1px solid var(--border-color);
+            padding: 0.4rem 0.8rem;
+            border-radius: 8px;
             transition: 0.3s;
         }
 
         .back-btn:hover {
-            background: #00f0ff;
-            color: #0b0f19;
-            box-shadow: 0 0 15px rgba(0, 240, 255, 0.5);
+            background: var(--accent-cyan);
+            color: #000;
+            box-shadow: 0 0 15px rgba(0, 240, 255, 0.4);
         }
 
         h1 {
-            font-size: 1.8rem;
-            background: linear-gradient(45deg, #00f0ff, #7000ff);
+            font-size: 1.5rem;
+            font-family: 'Rajdhani', sans-serif;
+            background: linear-gradient(45deg, var(--accent-cyan), var(--accent-purple));
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             text-transform: uppercase;
             letter-spacing: 2px;
         }
 
-        .game-container {
-            margin-top: 30px;
+        .game-wrapper {
             display: flex;
-            flex-direction: column;
-            align-items: center;
-            background: #111827;
-            padding: 20px;
+            gap: 20px;
+            max-width: 1000px;
+            width: 95%;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .game-container {
+            background: var(--card-bg);
+            padding: 15px;
             border-radius: 16px;
-            border: 1px solid #1f2937;
+            border: 1px solid var(--border-color);
             box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            position: relative;
         }
 
         canvas {
-            background: linear-gradient(to bottom, #020617, #1e1b4b);
+            background: linear-gradient(to bottom, #020617, #0f172a, #1e1b4b);
             border-radius: 12px;
-            border: 2px solid #374151;
-            box-shadow: inset 0 0 20px rgba(0,0,0,0.8);
+            border: 2px solid var(--border-color);
+            display: block;
+        }
+
+        .upgrade-panel {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 20px;
+            width: 260px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .upgrade-panel h3 {
+            font-family: 'Rajdhani', sans-serif;
+            color: var(--accent-cyan);
+            font-size: 1.3rem;
+            text-transform: uppercase;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 5px;
+        }
+
+        .upgrade-btn {
+            background: rgba(0, 240, 255, 0.1);
+            border: 1px solid var(--accent-cyan);
+            color: var(--text-main);
+            padding: 10px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: 0.3s;
+            text-align: left;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .upgrade-btn:hover {
+            background: var(--accent-cyan);
+            color: #000;
+            box-shadow: 0 0 15px rgba(0, 240, 255, 0.4);
         }
 
         .controls-info {
-            margin-top: 15px;
+            margin-top: 10px;
             text-align: center;
-            color: #9ca3af;
-            font-size: 0.95rem;
+            color: var(--text-muted);
+            font-size: 0.9rem;
         }
 
         .controls-info span {
-            color: #00f0ff;
+            color: var(--accent-cyan);
             font-weight: bold;
-            background: #1f2937;
-            padding: 4px 8px;
+            background: rgba(0, 240, 255, 0.1);
+            padding: 2px 6px;
             border-radius: 4px;
-            margin: 0 3px;
         }
     </style>
 </head>
 <body>
 
     <header>
-        <a href="games.html" class="back-btn">&#8592; Back to Hub</a>
-        <h1>Cyber Hill Climb</h1>
-        <div style="width: 100px;"></div> <!-- Spacer for centering -->
+        <a href="games.html" class="back-btn">&#8592; Back</a>
+        <h1>Cyber Hill Climb: Neon Edition</h1>
+        <div style="width: 70px;"></div>
     </header>
 
-    <div class="game-container">
-        <canvas id="gameCanvas" width="800" height="450"></canvas>
-        <div class="controls-info">
-            Controls: Use <span>RIGHT / LEFT Arrow keys</span> to tilt/drive, and <span>SPACEBAR</span> to restart!
+    <div class="game-wrapper">
+        <div class="game-container">
+            <canvas id="gameCanvas" width="700" height="400"></canvas>
+            <div class="controls-info">
+                Use <span>RIGHT / LEFT Arrows</span> to Drive & Balance | <span>SPACE</span> to Restart
+            </div>
+        </div>
+
+        <div class="upgrade-panel">
+            <h3>Gadgets & Upgrades</h3>
+            <div id="coinDisplay" style="font-weight: bold; color: #fbbf24; font-size: 1.1rem;">Coins: 🪙 0</div>
+            
+            <button class="upgrade-btn" onclick="buyUpgrade('engine')">
+                <span>⚡ Turbo Engine</span>
+                <span id="costEngine" style="font-size: 0.85rem; color: var(--accent-cyan);">20 Coins</span>
+            </button>
+            <button class="upgrade-btn" onclick="buyUpgrade('tires')">
+                <span>🛞 Grip Tires</span>
+                <span id="costTires" style="font-size: 0.85rem; color: var(--accent-cyan);">15 Coins</span>
+            </button>
+            <button class="upgrade-btn" onclick="buyUpgrade('gyro')">
+                <span>🛡️ Auto-Balance</span>
+                <span id="costGyro" style="font-size: 0.85rem; color: var(--accent-cyan);">30 Coins</span>
+            </button>
         </div>
     </div>
 
@@ -114,10 +194,18 @@
         const canvas = document.getElementById("gameCanvas");
         const ctx = canvas.getContext("2d");
 
-        // Game Variables
         let score = 0;
+        let coins = 0;
         let gameOver = false;
         let cameraX = 0;
+        let explosionParticles = [];
+
+        // Upgrades level
+        let upgrades = {
+            engine: { level: 1, cost: 20 },
+            tires: { level: 1, cost: 15 },
+            gyro: { level: 0, cost: 30 }
+        };
 
         // Car Object
         let car = {
@@ -126,14 +214,13 @@
             vx: 0,
             vy: 0,
             angle: 0,
-            width: 50,
-            height: 25,
-            power: 0.2,
-            gravity: 0.25,
-            friction: 0.98
+            width: 55,
+            height: 28,
+            power: 0.22,
+            gravity: 0.28,
+            friction: 0.985
         };
 
-        // Input Tracking
         let keys = {};
         window.addEventListener("keydown", (e) => {
             keys[e.code] = true;
@@ -145,11 +232,17 @@
             keys[e.code] = false;
         });
 
-        // Generate Terrain points using math waves (Hill shapes)
+        // Generate Terrain & Coins
         let terrain = [];
-        for (let i = 0; i < 2000; i++) {
-            let height = 300 + Math.sin(i * 0.03) * 60 + Math.cos(i * 0.01) * 100;
+        let coinList = [];
+        for (let i = 0; i < 3000; i++) {
+            let height = 280 + Math.sin(i * 0.025) * 80 + Math.cos(i * 0.01) * 120;
             terrain.push({ x: i * 15, y: height });
+            
+            // Place coins randomly on hills
+            if (i % 5 === 0 && i > 5) {
+                coinList.push({ x: i * 15, y: height - 35, collected: false });
+            }
         }
 
         function getTerrainHeight(x) {
@@ -163,6 +256,44 @@
             return p1.y + t * (p2.y - p1.y);
         }
 
+        function buyUpgrade(type) {
+            if (coins >= upgrades[type].cost) {
+                coins -= upgrades[type].cost;
+                upgrades[type].level++;
+                upgrades[type].cost = Math.floor(upgrades[type].cost * 1.5);
+
+                // Apply effects
+                if (type === 'engine') car.power += 0.06;
+                if (type === 'tires') car.friction += 0.003;
+                if (type === 'gyro') car.gyroActive = true;
+
+                updateUI();
+            }
+        }
+
+        function updateUI() {
+            document.getElementById("coinDisplay").innerText = "Coins: 🪙 " + coins;
+            document.getElementById("costEngine").innerText = upgrades.engine.cost + " Coins";
+            document.getElementById("costTires").innerText = upgrades.tires.cost + " Coins";
+            document.getElementById("costGyro").innerText = upgrades.gyro.level > 0 ? "MAX" : upgrades.gyro.cost + " Coins";
+        }
+
+        function triggerExplosion(x, y) {
+            gameOver = true;
+            explosionParticles = [];
+            for (let i = 0; i < 50; i++) {
+                explosionParticles.push({
+                    x: x,
+                    y: y,
+                    vx: (Math.random() - 0.5) * 10,
+                    vy: (Math.random() - 0.5) * 10,
+                    radius: Math.random() * 4 + 2,
+                    color: Math.random() > 0.5 ? "#ff0055" : "#fbbf24",
+                    alpha: 1
+                });
+            }
+        }
+
         function resetGame() {
             car.x = 100;
             car.y = 200;
@@ -172,6 +303,7 @@
             cameraX = 0;
             score = 0;
             gameOver = false;
+            explosionParticles = [];
         }
 
         function update() {
@@ -181,7 +313,7 @@
                     car.vx += car.power;
                 }
                 if (keys["ArrowLeft"]) {
-                    car.vx -= car.power * 0.5;
+                    car.vx -= car.power * 0.6;
                 }
 
                 // Physics
@@ -191,37 +323,60 @@
 
                 let groundY = getTerrainHeight(car.x);
 
-                // Check collision with ground
-                if (car.y >= groundY - 15) {
-                    car.y = groundY - 15;
+                // Check ground contact
+                if (car.y >= groundY - 14) {
+                    car.y = groundY - 14;
                     car.vy = 0;
                     
-                    // Simple angle adjustment based on slope
-                    let nextGroundY = getTerrainHeight(car.x + 10);
-                    let slope = (nextGroundY - groundY) / 10;
-                    car.angle = Math.atan(slope);
+                    let nextGroundY = getTerrainHeight(car.x + 12);
+                    let slope = (nextGroundY - groundY) / 12;
+                    let targetAngle = Math.atan(slope);
 
-                    // Hill climb boost when going right
+                    // Smooth angle transition
+                    car.angle += (targetAngle - car.angle) * 0.2;
+
                     if (keys["ArrowRight"] && car.vx > 0) {
-                        car.vy = -slope * car.vx * 0.5;
+                        car.vy = -slope * car.vx * 0.55;
                     }
                 } else {
                     car.y += car.vy;
-                    // Rotate in air if keys pressed
-                    if (keys["ArrowRight"]) car.angle += 0.05;
-                    if (keys["ArrowLeft"]) car.angle -= 0.05;
+                    // In-air rotation physics (Car flips if not controlled!)
+                    if (keys["ArrowRight"]) car.angle += 0.06;
+                    if (keys["ArrowLeft"]) car.angle -= 0.06;
+                    
+                    // Auto-balance gadget effect if purchased
+                    if (upgrades.gyro.level > 0) {
+                        car.angle *= 0.95; 
+                    }
                 }
 
-                // Camera follow
+                // Camera & Score
                 cameraX = car.x - 200;
-
-                // Score update based on distance
                 score = Math.floor(car.x / 10);
 
-                // Game Over Condition (Crash / Flip over)
-                if (Math.abs(car.angle) > 1.8) {
-                    gameOver = true;
+                // Coin collection check
+                coinList.forEach(coin => {
+                    if (!coin.collected) {
+                        let dist = Math.hypot(car.x - coin.x, car.y - coin.y);
+                        if (dist < 25) {
+                            coin.collected = true;
+                            coins += 5;
+                            updateUI();
+                        }
+                    }
+                });
+
+                // CRASH CONDITION: If angle flips too much (side down or upside down) and hits ground or flips completely
+                if (Math.abs(car.angle) > 1.55) {
+                    triggerExplosion(car.x, car.y);
                 }
+            } else {
+                // Update explosion particles
+                explosionParticles.forEach(p => {
+                    p.x += p.vx;
+                    p.y += p.vy;
+                    p.alpha -= 0.02;
+                });
             }
         }
 
@@ -231,58 +386,115 @@
             ctx.save();
             ctx.translate(-cameraX, 0);
 
-            // Draw Terrain
+            // Draw Neon Background Grid lines / Stars (Visual Enhancement)
+            ctx.strokeStyle = "rgba(0, 240, 255, 0.05)";
+            ctx.lineWidth = 1;
+            for (let i = Math.floor(cameraX / 50) * 50; i < cameraX + canvas.width; i += 50) {
+                ctx.beginPath();
+                ctx.moveTo(i, 0);
+                ctx.lineTo(i, canvas.height);
+                ctx.stroke();
+            }
+
+            // Draw Terrain with Glowing Gradient
             ctx.beginPath();
             ctx.moveTo(terrain[0].x, canvas.height);
             for (let i = 0; i < terrain.length; i++) {
                 ctx.lineTo(terrain[i].x, terrain[i].y);
             }
             ctx.lineTo(terrain[terrain.length - 1].x, canvas.height);
-            ctx.fillStyle = "#1e293b";
+            ctx.fillStyle = "#0f172a";
             ctx.fill();
-            ctx.lineWidth = 3;
+            
+            ctx.lineWidth = 4;
             ctx.strokeStyle = "#00f0ff";
+            ctx.shadowBlur = 15;
+            ctx.shadowColor = "#00f0ff";
             ctx.stroke();
+            ctx.shadowBlur = 0; // Reset shadow
 
-            // Draw Car
-            ctx.save();
-            ctx.translate(car.x, car.y);
-            ctx.rotate(car.angle);
+            // Draw Coins
+            coinList.forEach(coin => {
+                if (!coin.collected && coin.x > cameraX - 50 && coin.x < cameraX + canvas.width + 50) {
+                    ctx.beginPath();
+                    ctx.arc(coin.x, coin.y, 7, 0, Math.PI * 2);
+                    ctx.fillStyle = "#fbbf24";
+                    ctx.shadowBlur = 10;
+                    ctx.shadowColor = "#fbbf24";
+                    ctx.fill();
+                    ctx.shadowBlur = 0;
+                }
+            });
 
-            // Car Body
-            ctx.fillStyle = "#ff0055";
-            ctx.fillRect(-car.width / 2, -car.height, car.width, car.height);
-            ctx.fillStyle = "#00f0ff";
-            ctx.fillRect(-car.width / 4, -car.height - 10, car.width / 2, 10);
+            // Draw Car (if not exploded)
+            if (!gameOver) {
+                ctx.save();
+                ctx.translate(car.x, car.y);
+                ctx.rotate(car.angle);
 
-            // Wheels
-            ctx.beginPath();
-            ctx.arc(-car.width / 3, 0, 8, 0, Math.PI * 2);
-            ctx.arc(car.width / 3, 0, 8, 0, Math.PI * 2);
-            ctx.fillStyle = "#ffffff";
-            ctx.fill();
+                // Car Chassis (Futuristic Neon Look)
+                ctx.fillStyle = "#ff0055";
+                ctx.shadowBlur = 12;
+                ctx.shadowColor = "#ff0055";
+                ctx.fillRect(-car.width / 2, -car.height, car.width, car.height - 6);
+                
+                // Windshield / Cabin
+                ctx.fillStyle = "#00f0ff";
+                ctx.fillRect(-car.width / 4, -car.height - 10, car.width / 2, 10);
+                ctx.shadowBlur = 0;
+
+                // Wheels
+                ctx.beginPath();
+                ctx.arc(-car.width / 3, 4, 9, 0, Math.PI * 2);
+                ctx.arc(car.width / 3, 4, 9, 0, Math.PI * 2);
+                ctx.fillStyle = "#1e293b";
+                ctx.strokeStyle = "#ffffff";
+                ctx.lineWidth = 3;
+                ctx.fill();
+                ctx.stroke();
+
+                ctx.restore();
+            } else {
+                // Draw Explosion Particles
+                explosionParticles.forEach(p => {
+                    ctx.save();
+                    ctx.globalAlpha = Math.max(p.alpha, 0);
+                    ctx.beginPath();
+                    ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+                    ctx.fillStyle = p.color;
+                    ctx.shadowBlur = 10;
+                    ctx.shadowColor = p.color;
+                    ctx.fill();
+                    ctx.restore();
+                });
+            }
 
             ctx.restore();
-            ctx.restore();
 
-            // Draw UI (Score & Game Over text)
+            // Draw UI (Score & Coins on screen)
             ctx.fillStyle = "#ffffff";
-            ctx.font = "20px 'Segoe UI', sans-serif";
+            ctx.font = "bold 18px 'Outfit', sans-serif";
             ctx.fillText("Score: " + score, 20, 35);
+            ctx.fillStyle = "#fbbf24";
+            ctx.fillText("Coins: 🪙 " + coins, 20, 60);
 
+            // Game Over Screen
             if (gameOver) {
-                ctx.fillStyle = "rgba(0, 0, 0, 0.7)";
+                ctx.fillStyle = "rgba(7, 10, 15, 0.85)";
                 ctx.fillRect(0, 0, canvas.width, canvas.height);
 
                 ctx.fillStyle = "#ff0055";
-                ctx.font = "bold 35px 'Segoe UI', sans-serif";
+                ctx.font = "bold 32px 'Rajdhani', sans-serif";
                 ctx.textAlign = "center";
-                ctx.fillText("CRASHED!", canvas.width / 2, canvas.height / 2 - 20);
+                ctx.shadowBlur = 15;
+                ctx.shadowColor = "#ff0055";
+                ctx.fillText("CRASHED & BURNED!", canvas.width / 2, canvas.height / 2 - 20);
+                ctx.shadowBlur = 0;
 
                 ctx.fillStyle = "#00f0ff";
-                ctx.font = "18px 'Segoe UI', sans-serif";
-                ctx.fillText("Press SPACEBAR to Restart", canvas.width / 2, canvas.height / 2 + 20);
-                ctx.textAlign = "left"; // reset
+                ctx.font = "18px 'Outfit', sans-serif";
+                ctx.fillText("Press SPACEBAR to Restart", canvas.width / 2, canvas.height / 2 + 25);
+                ctx.textAlign = "left";
             }
         }
 
