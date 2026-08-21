@@ -41,7 +41,7 @@
             align-items: center;
             border-bottom: 1px solid var(--border-color);
             background: var(--card-bg);
-            max-width: 1000px;
+            max-width: 1100px;
             margin: 10px auto;
             border-radius: 12px;
         }
@@ -75,7 +75,7 @@
         .game-wrapper {
             display: flex;
             gap: 20px;
-            max-width: 1000px;
+            max-width: 1100px;
             width: 95%;
             margin-bottom: 20px;
             flex-wrap: wrap;
@@ -96,6 +96,9 @@
             border-radius: 12px;
             border: 2px solid var(--border-color);
             display: block;
+            width: 100%;
+            max-width: 760px;
+            height: auto;
         }
 
         .upgrade-panel {
@@ -103,7 +106,7 @@
             border: 1px solid var(--border-color);
             border-radius: 16px;
             padding: 20px;
-            width: 260px;
+            width: 280px;
             display: flex;
             flex-direction: column;
             gap: 15px;
@@ -144,6 +147,9 @@
             text-align: center;
             color: var(--text-muted);
             font-size: 0.9rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
 
         .controls-info span {
@@ -152,6 +158,21 @@
             background: rgba(0, 240, 255, 0.1);
             padding: 2px 6px;
             border-radius: 4px;
+        }
+
+        .fullscreen-btn {
+            background: var(--accent-cyan);
+            border: none;
+            color: #000;
+            padding: 5px 10px;
+            font-weight: bold;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .fullscreen-btn:hover {
+            box-shadow: 0 0 10px var(--accent-cyan);
         }
     </style>
 </head>
@@ -164,10 +185,11 @@
     </header>
 
     <div class="game-wrapper">
-        <div class="game-container">
-            <canvas id="gameCanvas" width="700" height="400"></canvas>
+        <div class="game-container" id="gameBox">
+            <canvas id="gameCanvas" width="760" height="420"></canvas>
             <div class="controls-info">
-                Use <span>RIGHT / LEFT Arrows</span> to Drive & Balance | <span>SPACE</span> to Restart
+                <span>Arrows</span>: Drive & Balance | <span>SPACE</span>: Restart
+                <button class="fullscreen-btn" onclick="toggleFullScreen()">Full Screen ⛶</button>
             </div>
         </div>
 
@@ -198,16 +220,15 @@
         let coins = 0;
         let gameOver = false;
         let cameraX = 0;
+        let cameraY = 0; // Added vertical camera tracking for smooth hill descents
         let explosionParticles = [];
 
-        // Upgrades level
         let upgrades = {
             engine: { level: 1, cost: 20 },
             tires: { level: 1, cost: 15 },
             gyro: { level: 0, cost: 30 }
         };
 
-        // Car Object
         let car = {
             x: 100,
             y: 200,
@@ -232,14 +253,12 @@
             keys[e.code] = false;
         });
 
-        // Generate Terrain & Coins
         let terrain = [];
         let coinList = [];
         for (let i = 0; i < 3000; i++) {
             let height = 280 + Math.sin(i * 0.025) * 80 + Math.cos(i * 0.01) * 120;
             terrain.push({ x: i * 15, y: height });
             
-            // Place coins randomly on hills
             if (i % 5 === 0 && i > 5) {
                 coinList.push({ x: i * 15, y: height - 35, collected: false });
             }
@@ -262,7 +281,6 @@
                 upgrades[type].level++;
                 upgrades[type].cost = Math.floor(upgrades[type].cost * 1.5);
 
-                // Apply effects
                 if (type === 'engine') car.power += 0.06;
                 if (type === 'tires') car.friction += 0.003;
                 if (type === 'gyro') car.gyroActive = true;
@@ -301,14 +319,25 @@
             car.vy = 0;
             car.angle = 0;
             cameraX = 0;
+            cameraY = 0;
             score = 0;
             gameOver = false;
             explosionParticles = [];
         }
 
+        function toggleFullScreen() {
+            let elem = document.getElementById("gameBox");
+            if (!document.fullscreenElement) {
+                elem.requestFullscreen().catch(err => {
+                    alert(`Error attempting to enable fullscreen: ${err.message}`);
+                });
+            } else {
+                document.exitFullscreen();
+            }
+        }
+
         function update() {
             if (!gameOver) {
-                // Controls
                 if (keys["ArrowRight"]) {
                     car.vx += car.power;
                 }
@@ -316,14 +345,12 @@
                     car.vx -= car.power * 0.6;
                 }
 
-                // Physics
                 car.vy += car.gravity;
                 car.vx *= car.friction;
                 car.x += car.vx;
 
                 let groundY = getTerrainHeight(car.x);
 
-                // Check ground contact
                 if (car.y >= groundY - 14) {
                     car.y = groundY - 14;
                     car.vy = 0;
@@ -332,7 +359,6 @@
                     let slope = (nextGroundY - groundY) / 12;
                     let targetAngle = Math.atan(slope);
 
-                    // Smooth angle transition
                     car.angle += (targetAngle - car.angle) * 0.2;
 
                     if (keys["ArrowRight"] && car.vx > 0) {
@@ -340,21 +366,22 @@
                     }
                 } else {
                     car.y += car.vy;
-                    // In-air rotation physics (Car flips if not controlled!)
                     if (keys["ArrowRight"]) car.angle += 0.06;
                     if (keys["ArrowLeft"]) car.angle -= 0.06;
                     
-                    // Auto-balance gadget effect if purchased
                     if (upgrades.gyro.level > 0) {
                         car.angle *= 0.95; 
                     }
                 }
 
-                // Camera & Score
-                cameraX = car.x - 200;
+                // Smooth Camera tracking for both X and Y (Keeps car clearly centered even when descending hills)
+                let targetCameraX = car.x - canvas.width / 2.5;
+                let targetCameraY = car.y - canvas.height / 2;
+                cameraX += (targetCameraX - cameraX) * 0.1;
+                cameraY += (targetCameraY - cameraY) * 0.1;
+
                 score = Math.floor(car.x / 10);
 
-                // Coin collection check
                 coinList.forEach(coin => {
                     if (!coin.collected) {
                         let dist = Math.hypot(car.x - coin.x, car.y - coin.y);
@@ -366,12 +393,10 @@
                     }
                 });
 
-                // CRASH CONDITION: If angle flips too much (side down or upside down) and hits ground or flips completely
                 if (Math.abs(car.angle) > 1.55) {
                     triggerExplosion(car.x, car.y);
                 }
             } else {
-                // Update explosion particles
                 explosionParticles.forEach(p => {
                     p.x += p.vx;
                     p.y += p.vy;
@@ -384,25 +409,26 @@
             ctx.clearRect(0, 0, canvas.width, canvas.height);
 
             ctx.save();
-            ctx.translate(-cameraX, 0);
+            // Apply 2D Camera translation for both X and Y axis
+            ctx.translate(-cameraX, -cameraY);
 
-            // Draw Neon Background Grid lines / Stars (Visual Enhancement)
+            // Terrain Background Grid
             ctx.strokeStyle = "rgba(0, 240, 255, 0.05)";
             ctx.lineWidth = 1;
             for (let i = Math.floor(cameraX / 50) * 50; i < cameraX + canvas.width; i += 50) {
                 ctx.beginPath();
-                ctx.moveTo(i, 0);
-                ctx.lineTo(i, canvas.height);
+                ctx.moveTo(i, cameraY);
+                ctx.lineTo(i, cameraY + canvas.height);
                 ctx.stroke();
             }
 
-            // Draw Terrain with Glowing Gradient
+            // Draw Terrain
             ctx.beginPath();
-            ctx.moveTo(terrain[0].x, canvas.height);
+            ctx.moveTo(terrain[0].x, terrain[0].y + 500);
             for (let i = 0; i < terrain.length; i++) {
                 ctx.lineTo(terrain[i].x, terrain[i].y);
             }
-            ctx.lineTo(terrain[terrain.length - 1].x, canvas.height);
+            ctx.lineTo(terrain[terrain.length - 1].x, terrain[terrain.length - 1].y + 500);
             ctx.fillStyle = "#0f172a";
             ctx.fill();
             
@@ -411,9 +437,9 @@
             ctx.shadowBlur = 15;
             ctx.shadowColor = "#00f0ff";
             ctx.stroke();
-            ctx.shadowBlur = 0; // Reset shadow
+            ctx.shadowBlur = 0;
 
-            // Draw Coins
+            // Coins
             coinList.forEach(coin => {
                 if (!coin.collected && coin.x > cameraX - 50 && coin.x < cameraX + canvas.width + 50) {
                     ctx.beginPath();
@@ -426,24 +452,21 @@
                 }
             });
 
-            // Draw Car (if not exploded)
+            // Car or Explosion
             if (!gameOver) {
                 ctx.save();
                 ctx.translate(car.x, car.y);
                 ctx.rotate(car.angle);
 
-                // Car Chassis (Futuristic Neon Look)
                 ctx.fillStyle = "#ff0055";
                 ctx.shadowBlur = 12;
                 ctx.shadowColor = "#ff0055";
                 ctx.fillRect(-car.width / 2, -car.height, car.width, car.height - 6);
                 
-                // Windshield / Cabin
                 ctx.fillStyle = "#00f0ff";
                 ctx.fillRect(-car.width / 4, -car.height - 10, car.width / 2, 10);
                 ctx.shadowBlur = 0;
 
-                // Wheels
                 ctx.beginPath();
                 ctx.arc(-car.width / 3, 4, 9, 0, Math.PI * 2);
                 ctx.arc(car.width / 3, 4, 9, 0, Math.PI * 2);
@@ -455,7 +478,6 @@
 
                 ctx.restore();
             } else {
-                // Draw Explosion Particles
                 explosionParticles.forEach(p => {
                     ctx.save();
                     ctx.globalAlpha = Math.max(p.alpha, 0);
@@ -471,14 +493,13 @@
 
             ctx.restore();
 
-            // Draw UI (Score & Coins on screen)
+            // Fixed UI Overlay (Score & Coins stay visible on top-left)
             ctx.fillStyle = "#ffffff";
             ctx.font = "bold 18px 'Outfit', sans-serif";
             ctx.fillText("Score: " + score, 20, 35);
             ctx.fillStyle = "#fbbf24";
             ctx.fillText("Coins: 🪙 " + coins, 20, 60);
 
-            // Game Over Screen
             if (gameOver) {
                 ctx.fillStyle = "rgba(7, 10, 15, 0.85)";
                 ctx.fillRect(0, 0, canvas.width, canvas.height);
