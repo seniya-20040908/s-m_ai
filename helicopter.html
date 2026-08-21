@@ -41,10 +41,10 @@
     const canvas = document.getElementById("gameCanvas");
     const ctx = canvas.getContext("2d");
     
-    // Game State
     let heli = { x: 150, y: 200, vy: 0, weight: 0, maxCap: 100, coins: 0, rotor: 0, dead: false };
     let items = [];
-    let particles = [];
+    let obstacles = [];
+    let gameSpeed = 4;
 
     function toggleFS() {
         const container = document.getElementById('game-container');
@@ -122,11 +122,54 @@
         if(!heli.dead) {
             drawHeli();
             
-            // Items
+            // Adjust speed slightly as coins increase (Progressive Difficulty)
+            gameSpeed = 4 + Math.floor(heli.coins / 50) * 0.5;
+
+            // Obstacles Spawning & Moving
+            if(Math.random() < 0.018) {
+                let gapHeight = 140; // Size of the opening
+                let topHeight = Math.random() * 150 + 40;
+                obstacles.push({
+                    x: 910,
+                    top: topHeight,
+                    bottom: topHeight + gapHeight,
+                    width: 50,
+                    passed: false
+                });
+            }
+
+            obstacles.forEach((obs, idx) => {
+                obs.x -= gameSpeed;
+                
+                // Draw Obstacles (Neon pillars)
+                ctx.fillStyle = "#1e293b";
+                ctx.strokeStyle = "#ff0055";
+                ctx.lineWidth = 2;
+                
+                // Top Pillar
+                ctx.fillRect(obs.x, 0, obs.width, obs.top);
+                ctx.strokeRect(obs.x, 0, obs.width, obs.top);
+                
+                // Bottom Pillar
+                ctx.fillRect(obs.x, obs.bottom, obs.width, 400 - obs.bottom);
+                ctx.strokeRect(obs.x, obs.bottom, obs.width, 400 - obs.bottom);
+
+                // Collision Detection with Obstacles
+                if (heli.x + 20 > obs.x && heli.x - 20 < obs.x + obs.width) {
+                    if (heli.y - 10 < obs.top || heli.y + 10 > obs.bottom) {
+                        heli.dead = true;
+                    }
+                }
+
+                // Remove off-screen obstacles
+                if (obs.x < -60) obstacles.splice(idx, 1);
+            });
+
+            // Items (Coins & Cargo)
             items.forEach((i, idx) => {
                 ctx.fillStyle = (i.type === 'coin') ? "#ffd700" : "#ff0055";
                 ctx.fillRect(i.x, i.y, 25, 25);
-                i.x -= 4;
+                i.x -= gameSpeed;
                 if(Math.hypot(i.x - heli.x, i.y - heli.y) < 30) {
                     if(i.type === 'coin') heli.coins += 10; else heli.weight += 10;
                     items.splice(idx, 1);
@@ -138,7 +181,8 @@
             heli.vy += 0.15;
             heli.y += heli.vy;
 
-            if(heli.y > 390 || heli.weight > heli.maxCap) {
+            // Boundaries & Weight Check
+            if(heli.y > 390 || heli.y < 10 || heli.weight > heli.maxCap) {
                 heli.dead = true;
             }
         } else {
@@ -157,6 +201,7 @@
         if(heli.dead) {
             heli = { x: 150, y: 200, vy: 0, weight: 0, maxCap: 100, coins: 0, rotor: 0, dead: false };
             items = [];
+            obstacles = [];
         } else {
             heli.vy = -5;
         }
@@ -174,3 +219,6 @@
 </script>
 </body>
 </html>
+```[cite: 1]
+
+දැන් මේක ක්‍රීඩා කරලා බලන්න. බාධක මැදින් යද්දී මාරම ෆන් එකක් තියෙනවා!
