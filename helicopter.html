@@ -2,86 +2,91 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Cargo Chopper Pro</title>
+    <title>Full Screen Cargo Chopper</title>
     <style>
-        :root { --accent: #00f0ff; --bg: #030712; }
-        body { background: var(--bg); color: #fff; margin: 0; font-family: 'Rajdhani', sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; overflow: hidden; }
-        
-        /* Game Hub Header */
-        .header { width: 800px; display: flex; justify-content: space-between; align-items: center; padding: 15px; background: #0f172a; border-radius: 10px; border: 1px solid #334155; margin-bottom: 10px; }
-        .back-btn { padding: 8px 20px; background: transparent; border: 1px solid var(--accent); color: var(--accent); border-radius: 5px; cursor: pointer; text-decoration: none; font-weight: bold; }
-        
-        /* Canvas & UI */
-        canvas { background: #090e1a; border: 2px solid #334155; border-radius: 10px; }
-        .ui-panel { position: absolute; top: 100px; left: 50px; display: flex; flex-direction: column; align-items: center; }
-        .gauge { width: 100px; height: 100px; border: 4px solid #fff; border-radius: 50%; position: relative; }
-        #needle { width: 4px; height: 40px; background: var(--accent); position: absolute; left: 48px; bottom: 50px; transform-origin: bottom; transition: 0.2s; }
+        body { margin: 0; background: #030712; overflow: hidden; display: flex; justify-content: center; align-items: center; height: 100vh; }
+        canvas { border: 2px solid #334155; cursor: pointer; background: linear-gradient(to bottom, #0f172a, #000); }
     </style>
 </head>
 <body>
 
-<div class="header">
-    <a href="games.html" class="back-btn">← Games Hub</a>
-    <h2>CARGO CHOPPER PRO</h2>
-    <button onclick="buyBoost()" style="padding: 8px; background: var(--accent); border: none; cursor: pointer;">BUY BOOST (50 Coins)</button>
-</div>
-
-<div class="ui-panel">
-    <div class="gauge"><div id="needle"></div></div>
-    <h3 style="color: var(--accent);">COINS: <span id="coinCount">0</span></h3>
-</div>
-
-<canvas id="gameCanvas" width="800" height="400"></canvas>
+<canvas id="gameCanvas"></canvas>
 
 <script>
     const canvas = document.getElementById("gameCanvas");
     const ctx = canvas.getContext("2d");
-    let heli = { x: 100, y: 200, vy: 0, weight: 0, maxCap: 100, coins: 0, rotor: 0 };
+
+    // Full Screen Setup
+    function resize() {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+    }
+    window.onresize = resize;
+    resize();
+
+    let heli = { x: 100, y: 200, vy: 0, weight: 0, maxCap: 100, coins: 0, rotor: 0, dead: false };
     let items = [];
 
-    function buyBoost() { if(heli.coins >= 50) { heli.coins -= 50; heli.maxCap += 50; } }
-
-    function drawHeli() {
-        ctx.save(); ctx.translate(heli.x, heli.y);
-        ctx.fillStyle = "#00f0ff"; ctx.fillRect(-20, -10, 40, 20); // Body
-        ctx.fillRect(-40, -5, 20, 6); // Tail
-        ctx.fillStyle = "#fff"; ctx.fillRect(10, -8, 10, 10); // Cockpit
-        heli.rotor += 0.5;
-        ctx.strokeStyle = "#fff"; ctx.beginPath(); ctx.moveTo(Math.cos(heli.rotor)*30, -15);
-        ctx.lineTo(-Math.cos(heli.rotor)*30, -15); ctx.stroke();
-        ctx.restore();
+    function drawUI() {
+        // Back Button
+        ctx.fillStyle = "#ff0055"; ctx.fillRect(20, 20, 100, 40);
+        ctx.fillStyle = "#fff"; ctx.font = "bold 16px Arial"; ctx.fillText("← BACK", 35, 47);
+        
+        // Gauge
+        ctx.strokeStyle = "#fff"; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(canvas.width - 80, 80, 50, 0, Math.PI*2); ctx.stroke();
+        let angle = (heli.weight / heli.maxCap) * Math.PI - Math.PI/2;
+        ctx.strokeStyle = "#00f0ff"; ctx.beginPath(); ctx.moveTo(canvas.width - 80, 80); 
+        ctx.lineTo(canvas.width - 80 + Math.cos(angle)*45, 80 + Math.sin(angle)*45); ctx.stroke();
+        ctx.fillStyle = "#fff"; ctx.fillText("COINS: " + heli.coins, canvas.width - 120, 160);
     }
 
     function update() {
+        if(heli.dead) return;
         heli.vy += 0.15; heli.y += heli.vy;
-        if(Math.random() < 0.02) items.push({ x: 800, y: Math.random()*350, type: Math.random() > 0.5 ? 'coin' : 'cargo' });
+        
+        if(Math.random() < 0.02) items.push({ x: canvas.width, y: Math.random()*(canvas.height-100)+50, type: Math.random() > 0.5 ? 'coin' : 'cargo' });
         
         items.forEach((i, idx) => {
-            i.x -= 3;
-            if(Math.hypot(i.x - heli.x, i.y - heli.y) < 30) {
+            i.x -= 4;
+            if(Math.hypot(i.x - heli.x, i.y - heli.y) < 40) {
                 if(i.type == 'coin') heli.coins += 10;
                 else heli.weight += 10;
                 items.splice(idx, 1);
             }
         });
 
-        let angle = (heli.weight / heli.maxCap) * 180 - 90;
-        document.getElementById('needle').style.transform = `rotate(${angle}deg)`;
-        document.getElementById('coinCount').innerText = heli.coins;
-        
-        // උඩට ගියාට අවුලක් නෑ, බිම වැදුනොත් විතරයි Out
-        if(heli.y > 390 || heli.weight > heli.maxCap) { alert("GAME OVER!"); location.reload(); }
+        if(heli.y > canvas.height - 20 || heli.weight > heli.maxCap) heli.dead = true;
     }
 
     function render() {
-        ctx.clearRect(0,0,800,400);
-        drawHeli();
-        items.forEach(i => { ctx.fillStyle = i.type == 'coin' ? '#ffd700' : '#ff0055'; ctx.fillRect(i.x, i.y, 20, 20); });
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        drawUI();
+        
+        // Helicopter
+        ctx.save(); ctx.translate(heli.x, heli.y);
+        ctx.fillStyle = "#00f0ff"; ctx.fillRect(-25, -12, 50, 24); // Body
+        ctx.fillRect(-50, -6, 25, 8); // Tail
+        heli.rotor += 0.5;
+        ctx.strokeStyle = "#fff"; ctx.beginPath(); ctx.moveTo(Math.cos(heli.rotor)*40, -20);
+        ctx.lineTo(-Math.cos(heli.rotor)*40, -20); ctx.stroke();
+        ctx.restore();
+
+        items.forEach(i => { ctx.fillStyle = i.type == 'coin' ? '#ffd700' : '#ff0055'; ctx.fillRect(i.x, i.y, 25, 25); });
+        
+        if(heli.dead) {
+            ctx.fillStyle = "rgba(0,0,0,0.8)"; ctx.fillRect(0,0,canvas.width, canvas.height);
+            ctx.fillStyle = "#fff"; ctx.font = "50px Arial"; ctx.fillText("GAME OVER - Click to Restart", canvas.width/2 - 300, canvas.height/2);
+        }
+        
         update();
         requestAnimationFrame(render);
     }
 
-    window.onkeydown = () => heli.vy = -4;
+    canvas.onclick = (e) => {
+        if(heli.dead) { heli.y=200; heli.vy=0; heli.weight=0; heli.coins=0; heli.dead=false; }
+        else if(e.offsetX > 20 && e.offsetX < 120 && e.offsetY > 20 && e.offsetY < 60) window.history.back();
+        else heli.vy = -5;
+    };
     render();
 </script>
 </body>
