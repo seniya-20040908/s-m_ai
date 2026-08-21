@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cyber Helicopter - Pro Edition</title>
+    <title>Neon Chopper - Action Edition</title>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Rajdhani:wght@500;700;800&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -108,14 +108,14 @@
 
     <header>
         <a href="games.html" class="back-btn">&#8592; Back</a>
-        <h1>Neon Chopper 3D-Look</h1>
+        <h1>Neon Chopper: Sky Battle</h1>
         <div style="width: 50px;"></div>
     </header>
 
     <div class="game-container">
         <canvas id="gameCanvas" width="800" height="450"></canvas>
         <div class="controls-hint">
-            <span>HOLD LEFT-CLICK</span> or <span>SPACEBAR</span> to Fly Up | Release to Fall Down
+            <span>UP / DOWN ARROWS</span> or <span>MOUSE</span> to Move | Collect Stars, Avoid Missiles!
         </div>
     </div>
 
@@ -124,70 +124,85 @@
         const ctx = canvas.getContext("2d");
 
         let score = 0;
-        let highScore = localStorage.getItem("chopperHighScore") || 0;
+        let highScore = localStorage.getItem("chopperActionHighScore") || 0;
         let gameOver = false;
         let gameStarted = false;
 
-        // Helicopter Properties
+        // Helicopter Object
         let heli = {
-            x: 120,
+            x: 100,
             y: 225,
-            w: 55,
-            h: 26,
-            vy: 0,
-            lift: -0.38,
-            gravity: 0.24,
+            w: 60,
+            h: 30,
+            speed: 5,
             rotorAngle: 0
         };
 
-        let obstacles = [];
+        let missiles = [];
+        let stars = [];
         let particles = [];
         let frameCount = 0;
 
-        // Controls
-        let isHolding = false;
-        window.addEventListener("mousedown", () => { isHolding = true; if(!gameStarted) gameStarted = true; if(gameOver) resetGame(); });
-        window.addEventListener("mouseup", () => { isHolding = false; });
+        let keys = {};
         window.addEventListener("keydown", (e) => {
-            if (e.code === "Space") {
-                isHolding = true;
-                if(!gameStarted) gameStarted = true;
-                if(gameOver) resetGame();
-                e.preventDefault();
+            keys[e.code] = true;
+            if(!gameStarted && (e.code === "Space" || e.code === "ArrowUp" || e.code === "ArrowDown")) {
+                gameStarted = true;
+            }
+            if(gameOver && e.code === "Space") {
+                resetGame();
+            }
+            if(e.code === "Space") e.preventDefault();
+        });
+        window.addEventListener("keyup", (e) => { keys[e.code] = false; });
+
+        // Mouse movement support
+        canvas.addEventListener("mousemove", (e) => {
+            if(!gameStarted) gameStarted = true;
+            let rect = canvas.getBoundingClientRect();
+            let mouseY = e.clientY - rect.top;
+            if(gameStarted && !gameOver) {
+                heli.y = mouseY - heli.h / 2;
             }
         });
-        window.addEventListener("keyup", (e) => {
-            if (e.code === "Space") isHolding = false;
+
+        canvas.addEventListener("click", () => {
+            if(!gameStarted) gameStarted = true;
+            else if(gameOver) resetGame();
         });
 
         function resetGame() {
             heli.y = 225;
-            heli.vy = 0;
-            obstacles = [];
+            missiles = [];
+            stars = [];
             particles = [];
             score = 0;
             frameCount = 0;
             gameOver = false;
         }
 
-        // Spawn Caves / Obstacles
-        function spawnObstacles() {
-            let gapHeight = 150; // Opening size
-            let minTop = 50;
-            let maxTop = canvas.height - gapHeight - 80;
-            let topHeight = Math.floor(Math.random() * (maxTop - minTop + 1)) + minTop;
-
-            obstacles.push({
+        function spawnMissile() {
+            let mY = Math.floor(Math.random() * (canvas.height - 80)) + 40;
+            missiles.push({
                 x: canvas.width,
-                top: topHeight,
-                bottom: canvas.height - (topHeight + gapHeight),
-                width: 50,
-                passed: false
+                y: mY,
+                w: 40,
+                h: 14,
+                speed: 5 + Math.random() * 3
+            });
+        }
+
+        function spawnStar() {
+            let sY = Math.floor(Math.random() * (canvas.height - 80)) + 40;
+            stars.push({
+                x: canvas.width,
+                y: sY,
+                radius: 12
             });
         }
 
         function createParticles(x, y, color) {
-            for (let i = 0; i < 6; i++) {
+            for (let i = 0; i < 8; i++) {
                 particles.push({
                     x: x,
                     y: y,
@@ -201,62 +216,73 @@
         }
 
         function update() {
-            if (!gameStarted) return;
+            if (!gameStarted || gameOver) return;
 
-            if (!gameOver) {
-                frameCount++;
-                score = Math.floor(frameCount / 10);
+            frameCount++;
+            heli.rotorAngle += 0.5;
 
-                if (isHolding) {
-                    heli.vy += heli.lift;
-                    // Sparkles under chopper
-                    if(frameCount % 3 === 0) {
-                        createParticles(heli.x - 15, heli.y + 12, "#00f0ff");
-                    }
-                } else {
-                    heli.vy += heli.gravity;
-                }
+            // Keyboard movement
+            if ((keys["ArrowUp"] || keys["KeyW"]) && heli.y > 10) {
+                heli.y -= heli.speed;
+            }
+            if ((keys["ArrowDown"] || keys["KeyS"]) && heli.y < canvas.height - heli.h - 10) {
+                heli.y += heli.speed;
+            }
 
-                heli.y += heli.vy;
-                heli.rotorAngle += 0.4;
+            // Boundary limit
+            if (heli.y < 10) heli.y = 10;
+            if (heli.y > canvas.height - heli.h - 10) heli.y = canvas.height - heli.h - 10;
 
-                // Spawn obstacle every 90 frames
-                if (frameCount % 90 === 0) {
-                    spawnObstacles();
-                }
+            // Spawn missiles and stars
+            if (frameCount % 80 === 0) spawnMissile();
+            if (frameCount % 60 === 0) spawnStar();
 
-                // Move obstacles
-                for (let i = obstacles.length - 1; i >= 0; i--) {
-                    obstacles[i].x -= 4;
+            // Update Missiles
+            for (let i = missiles.length - 1; i >= 0; i--) {
+                missiles[i].x -= missiles[i].speed;
 
-                    // Collision Detection
-                    if (
-                        heli.x + heli.w / 2 > obstacles[i].x &&
-                        heli.x - heli.w / 2 < obstacles[i].x + obstacles[i].width &&
-                        (heli.y - heli.h / 2 < obstacles[i].top || heli.y + heli.h / 2 > canvas.height - obstacles[i].bottom)
-                    ) {
-                        gameOver = true;
-                        createParticles(heli.x, heli.y, "#ff0055");
-                        if (score > highScore) {
-                            highScore = score;
-                            localStorage.setItem("chopperHighScore", highScore);
-                        }
-                    }
-
-                    // Remove off-screen obstacles
-                    if (obstacles[i].x + obstacles[i].width < 0) {
-                        obstacles.splice(i, 1);
-                    }
-                }
-
-                // Boundary check (Floor & Roof)
-                if (heli.y - heli.h / 2 < 10 || heli.y + heli.h / 2 > canvas.height - 10) {
+                // Collision with Helicopter
+                if (
+                    heli.x < missiles[i].x + missiles[i].w &&
+                    heli.x + heli.w > missiles[i].x &&
+                    heli.y < missiles[i].y + missiles[i].h &&
+                    heli.y + heli.h > missiles[i].y
+                ) {
                     gameOver = true;
-                    createParticles(heli.x, heli.y, "#ff0055");
+                    createParticles(heli.x + heli.w/2, heli.y + heli.h/2, "#ff0055");
+                }
+
+                if (missiles[i].x + missiles[i].w < 0) {
+                    missiles.splice(i, 1);
+                    score += 5; // survived missile
                 }
             }
 
-            // Update particles
+            // Update Stars (Points)
+            for (let i = stars.length - 1; i >= 0; i--) {
+                stars[i].x -= 3.5;
+
+                let distX = (heli.x + heli.w/2) - stars[i].x;
+                let distY = (heli.y + heli.h/2) - stars[i].y;
+                let distance = Math.sqrt(distX * distX + distY * distY);
+
+                if (distance < heli.w/3 + stars[i].radius) {
+                    score += 20;
+                    createParticles(stars[i].x, stars[i].y, "#00f0ff");
+                    stars.splice(i, 1);
+                    if (score > highScore) {
+                        highScore = score;
+                        localStorage.setItem("chopperActionHighScore", highScore);
+                    }
+                    continue;
+                }
+
+                if (stars[i].x + stars[i].radius < 0) {
+                    stars.splice(i, 1);
+                }
+            }
+
+            // Particles update
             particles.forEach((p, index) => {
                 p.x += p.vx;
                 p.y += p.vy;
@@ -268,7 +294,7 @@
         function draw() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-            // Draw Background Cyber Grid Lines
+            // Grid background
             ctx.strokeStyle = "rgba(0, 240, 255, 0.03)";
             ctx.lineWidth = 1;
             for (let i = 0; i < canvas.width; i += 40) {
@@ -278,56 +304,63 @@
                 ctx.beginPath(); ctx.moveTo(0, i); ctx.lineTo(canvas.width, i); ctx.stroke();
             }
 
-            // Draw Obstacles (Neon Cave Walls)
-            obstacles.forEach(obs => {
+            // Draw Stars
+            stars.forEach(s => {
+                ctx.save();
                 ctx.shadowBlur = 15;
                 ctx.shadowColor = "#00f0ff";
-                ctx.fillStyle = "#0f172a";
-                ctx.strokeStyle = "#00f0ff";
-                ctx.lineWidth = 2;
-
-                // Top Wall
-                ctx.fillRect(obs.x, 0, obs.width, obs.top);
-                ctx.strokeRect(obs.x, 0, obs.width, obs.top);
-
-                // Bottom Wall
-                ctx.fillRect(obs.x, canvas.height - obs.bottom, obs.width, obs.bottom);
-                ctx.strokeRect(obs.x, canvas.height - obs.bottom, obs.width, obs.bottom);
-                ctx.shadowBlur = 0;
+                ctx.fillStyle = "#00f0ff";
+                ctx.beginPath();
+                ctx.arc(s.x, s.y, s.radius, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.restore();
             });
 
-            // Draw Helicopter
+            // Draw Missiles
+            missiles.forEach(m => {
+                ctx.save();
+                ctx.shadowBlur = 15;
+                ctx.shadowColor = "#ff0055";
+                ctx.fillStyle = "#ff0055";
+                ctx.fillRect(m.x, m.y, m.w, m.h);
+                // Missile head flame
+                ctx.fillStyle = "#ffff00";
+                ctx.fillRect(m.x + m.w, m.y + 3, 8, 8);
+                ctx.restore();
+            });
+
+            // Draw Detailed Helicopter
             if (!gameOver || Math.floor(Date.now() / 100) % 2 === 0) {
                 ctx.save();
                 ctx.translate(heli.x, heli.y);
 
-                // Chopper Body
+                // Body
                 ctx.shadowBlur = 15;
-                ctx.shadowColor = "#ff0055";
-                ctx.fillStyle = "#ff0055";
-                ctx.fillRect(-heli.w / 2, -heli.h / 2, heli.w, heli.h);
-
-                // Cockpit Glass
+                ctx.shadowColor = "#00f0ff";
                 ctx.fillStyle = "#00f0ff";
-                ctx.fillRect(5, -heli.h / 2 + 3, 15, heli.h - 6);
+                ctx.fillRect(0, 0, heli.w, heli.h);
+
+                // Cockpit
+                ctx.fillStyle = "#ff0055";
+                ctx.fillRect(35, 4, 18, heli.h - 8);
 
                 // Tail
-                ctx.fillStyle = "#ff0055";
-                ctx.fillRect(-heli.w / 2 - 18, -4, 18, 6);
+                ctx.fillStyle = "#00f0ff";
+                ctx.fillRect(-20, 10, 20, 6);
 
-                // Rotor Blades (Spinning Animation)
+                // Rotor Blade
                 ctx.fillStyle = "#ffffff";
                 ctx.shadowBlur = 10;
                 ctx.shadowColor = "#ffffff";
                 ctx.beginPath();
-                let bladeWidth = Math.cos(heli.rotorAngle) * 36;
-                ctx.rect(-bladeWidth / 2, -heli.h / 2 - 8, bladeWidth, 4);
+                let bladeW = Math.cos(heli.rotorAngle) * 45;
+                ctx.rect(heli.w / 2 - bladeW / 2, -6, bladeW, 4);
                 ctx.fill();
 
                 ctx.restore();
             }
 
-            // Draw Particles
+            // Particles
             particles.forEach(p => {
                 ctx.save();
                 ctx.globalAlpha = Math.max(p.alpha, 0);
@@ -347,7 +380,7 @@
             ctx.fillStyle = "#00f0ff";
             ctx.fillText("HIGH SCORE: " + highScore, 20, 60);
 
-            // Start / Game Over Screens
+            // Overlays
             if (!gameStarted) {
                 ctx.fillStyle = "rgba(3, 7, 18, 0.85)";
                 ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -356,10 +389,10 @@
                 ctx.textAlign = "center";
                 ctx.shadowBlur = 15;
                 ctx.shadowColor = "#00f0ff";
-                ctx.fillText("NEON CHOPPER PRO", canvas.width / 2, canvas.height / 2 - 20);
+                ctx.fillText("NEON CHOPPER: SKY BATTLE", canvas.width / 2, canvas.height / 2 - 20);
                 ctx.fillStyle = "#ffffff";
                 ctx.font = "18px 'Outfit', sans-serif";
-                ctx.fillText("Click or Press Spacebar to Start", canvas.width / 2, canvas.height / 2 + 25);
+                ctx.fillText("Move Mouse or Arrows to Start", canvas.width / 2, canvas.height / 2 + 25);
                 ctx.textAlign = "left";
                 ctx.shadowBlur = 0;
             } else if (gameOver) {
@@ -370,11 +403,11 @@
                 ctx.textAlign = "center";
                 ctx.shadowBlur = 20;
                 ctx.shadowColor = "#ff0055";
-                ctx.fillText("CRASHED!", canvas.width / 2, canvas.height / 2 - 20);
+                ctx.fillText("MISSION FAILED!", canvas.width / 2, canvas.height / 2 - 20);
                 ctx.fillStyle = "#00f0ff";
                 ctx.font = "18px 'Outfit', sans-serif";
-                ctx.fillText("Click or Press Spacebar to Try Again", canvas.width / 2, canvas.height / 2 + 25);
-                ctx.textAlign = "left";
+                ctx.fillText("Press Spacebar to Try Again", canvas.width / 2, canvas.height / 2 + 25);
+                ctx.textAlign, "left";
                 ctx.shadowBlur = 0;
             }
         }
