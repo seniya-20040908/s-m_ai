@@ -13,12 +13,14 @@
             --text: #ffffff;
         }
         body { margin: 0; background: var(--bg); display: flex; justify-content: center; align-items: center; height: 100vh; font-family: 'Rajdhani', sans-serif; overflow: hidden; }
-        #game-container { width: 950px; background: var(--panel); padding: 20px; border: 2px solid var(--primary); border-radius: 15px; box-shadow: 0 0 30px rgba(0, 240, 255, 0.2); }
-        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; border-bottom: 1px solid #1e293b; padding-bottom: 10px; }
+        #game-container { width: 950px; background: var(--panel); padding: 20px; border: 2px solid var(--primary); border-radius: 15px; box-shadow: 0 0 30px rgba(0, 240, 255, 0.2); display: flex; flex-direction: column; align-items: center; }
+        #game-container:fullscreen { width: 100vw; height: 100vh; max-width: none; border: none; border-radius: 0; padding: 10px; box-sizing: border-box; justify-content: center; }
+        .header { width: 100%; display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; border-bottom: 1px solid #1e293b; padding-bottom: 10px; box-sizing: border-box; }
         h2 { color: var(--primary); margin: 0; letter-spacing: 2px; }
         button { padding: 10px 20px; background: #1e293b; border: 1px solid var(--primary); color: var(--primary); cursor: pointer; border-radius: 5px; font-weight: bold; font-family: 'Rajdhani', sans-serif; transition: 0.3s; }
         button:hover { background: var(--primary); color: var(--bg); }
-        #gameCanvas { background: #030712; display: block; border-radius: 5px; cursor: crosshair; box-shadow: inset 0 0 10px rgba(0,0,0,0.5); }
+        #gameCanvas { background: #030712; display: block; border-radius: 5px; cursor: crosshair; box-shadow: inset 0 0 10px rgba(0,0,0,0.5); width: 910px; height: 400px; }
+        #game-container:fullscreen #gameCanvas { width: 100%; height: calc(100vh - 100px); max-height: 85vh; }
         .controls-info { text-align: center; margin-top: 10px; color: #94a3b8; font-size: 14px; }
     </style>
 </head>
@@ -39,9 +41,9 @@
     const ctx = canvas.getContext("2d");
 
     let heli = { x: 100, y: 150, width: 50, height: 22, speed: 4, hp: 100, maxHp: 100, rotor: 0, dead: false };
-    let bullets = [];      // Player bullets going down
-    let missiles = [];     // Truck missiles going up
-    let trucks = [];       // Enemy trucks on the ground
+    let bullets = [];      
+    let missiles = [];     
+    let trucks = [];       
     let score = 0;
     let keys = {};
 
@@ -78,30 +80,25 @@
     function update() {
         if(heli.dead) return;
 
-        // Helicopter Movement (Arrow Keys)
         if(keys['ArrowUp'] && heli.y > 10) heli.y -= heli.speed;
         if(keys['ArrowDown'] && heli.y < 320) heli.y += heli.speed;
         if(keys['ArrowLeft'] && heli.x > 30) heli.x -= heli.speed;
         if(keys['ArrowRight'] && heli.x < 500) heli.x += heli.speed;
 
-        // Player Bullets Update (Firing Downwards)
         bullets.forEach((b, index) => {
             b.y += b.speed;
             if(b.y > canvas.height) bullets.splice(index, 1);
         });
 
-        // Trucks Update & Missile Firing
         trucks.forEach((t, tIndex) => {
             t.x -= t.speed;
             t.shootTimer++;
 
-            // Truck shoots a missile upwards
             if(t.shootTimer > 70) {
                 missiles.push({ x: t.x + t.width/2, y: t.y, speed: 4.5 });
                 t.shootTimer = 0;
             }
 
-            // Check if player bullets hit the truck
             bullets.forEach((b, bIndex) => {
                 if(b.x > t.x && b.x < t.x + t.width && b.y > t.y && b.y < t.y + t.height) {
                     trucks.splice(tIndex, 1);
@@ -113,11 +110,9 @@
             if(t.x < -60) trucks.splice(tIndex, 1);
         });
 
-        // Missiles Update (Moving Upwards to hit Heli)
         missiles.forEach((m, mIndex) => {
             m.y -= m.speed;
 
-            // Hit Helicopter check
             if(m.x > heli.x && m.x < heli.x + heli.width && m.y > heli.y && m.y < heli.y + heli.height) {
                 heli.hp -= 25;
                 missiles.splice(mIndex, 1);
@@ -135,37 +130,30 @@
     function render() {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-        // Background Grid & Ground Line
         ctx.strokeStyle = "rgba(0, 240, 255, 0.05)";
         for(let i=0; i<canvas.width; i+=40) { ctx.beginPath(); ctx.moveTo(i,0); ctx.lineTo(i,canvas.height); ctx.stroke(); }
         for(let i=0; i<canvas.height; i+=40) { ctx.beginPath(); ctx.moveTo(0,i); ctx.lineTo(canvas.width,i); ctx.stroke(); }
         
-        // Ground
         ctx.fillStyle = "#1e293b";
         ctx.fillRect(0, 390, canvas.width, 10);
 
-        // Render Ultra-Detailed Helicopter
         if(!heli.dead) {
             ctx.save();
             ctx.translate(heli.x, heli.y);
             ctx.shadowBlur = 18;
             ctx.shadowColor = "#00f0ff";
             
-            // Main Body
             ctx.fillStyle = "#00f0ff";
             ctx.fillRect(-22, -8, 44, 18);
             
-            // Cockpit Canopy (Glass effect)
             ctx.fillStyle = "#ffffff";
             ctx.fillRect(6, -6, 14, 12);
 
-            // Tail Boom & Tail Rotor Fin
             ctx.fillStyle = "#00f0ff";
             ctx.fillRect(-38, -4, 18, 6);
             ctx.fillStyle = "#ff0055";
             ctx.fillRect(-38, -10, 4, 12);
 
-            // Landing Skids
             ctx.strokeStyle = "#ffffff";
             ctx.lineWidth = 2;
             ctx.beginPath();
@@ -174,7 +162,6 @@
             ctx.moveTo(10, 10); ctx.lineTo(15, 14);
             ctx.stroke();
 
-            // Animated Main Rotor Blades
             heli.rotor += 0.7;
             ctx.strokeStyle = "#ffffff";
             ctx.lineWidth = 3;
@@ -186,17 +173,14 @@
             ctx.restore();
         }
 
-        // Render Enemy Trucks
         ctx.shadowColor = "#ff0055";
         trucks.forEach(t => {
             ctx.fillStyle = "#ff0055";
             ctx.fillRect(t.x, t.y, t.width, t.height);
-            // Truck launcher barrel
             ctx.fillStyle = "#ffffff";
             ctx.fillRect(t.x + 18, t.y - 8, 8, 10);
         });
 
-        // Render Player Bullets (Cyan - Going Down)
         ctx.shadowBlur = 10;
         ctx.shadowColor = "#00f0ff";
         ctx.fillStyle = "#00f0ff";
@@ -204,14 +188,12 @@
             ctx.beginPath(); ctx.arc(b.x, b.y, 4, 0, Math.PI*2); ctx.fill();
         });
 
-        // Render Enemy Missiles (Pink/Red - Going Up)
         ctx.shadowColor = "#ff0055";
         ctx.fillStyle = "#ff0055";
         missiles.forEach(m => {
             ctx.beginPath(); ctx.arc(m.x, m.y, 4, 0, Math.PI*2); ctx.fill();
         });
 
-        // HUD (Score & Health Bar)
         ctx.shadowBlur = 0;
         ctx.fillStyle = "#ffffff";
         ctx.font = "bold 18px 'Rajdhani'";
@@ -226,7 +208,6 @@
         if(hpWidth < 0) hpWidth = 0;
         ctx.fillRect(782, 17, hpWidth, 16);
 
-        // Explosion / Game Over Screen
         if(heli.dead) {
             ctx.fillStyle = "rgba(255, 0, 85, 0.3)";
             ctx.fillRect(0, 0, canvas.width, canvas.height);
